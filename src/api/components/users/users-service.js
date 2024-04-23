@@ -123,6 +123,12 @@ async function emailIsRegistered(email) {
 }
 
 /**
+ * untuk sorting
+ * @param {string} sort
+ * @returns {array}
+ */
+
+/**
  * Check whether the password is correct
  * @param {string} userId - User ID
  * @param {string} password - Password

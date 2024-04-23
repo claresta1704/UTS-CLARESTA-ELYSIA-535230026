@@ -1,4 +1,5 @@
 const usersService = require('./users-service');
+const usersRepository = require('./users-repository');
 const { errorResponder, errorTypes } = require('../../../core/errors');
 
 /**
@@ -189,6 +190,43 @@ async function changePassword(request, response, next) {
   }
 }
 
+/**
+ * Handle change user password request
+ * @param {object} request - Express request object
+ * @param {object} response - Express response object
+ * @param {object} next - Express route middlewares
+ * @returns {object} Response object or pass an error to the next route
+ */
+async function filteringUsers(sort, search, page_size, page_number) {
+  //Sesuai intruksi soal, langkahnya adalah sort, search, page_size, lalu page_number
+  //Langkah pertama SEARCH
+  let filteredUsers;
+  const regex = /^[a-zA-Z]+:[\w\s\S]+$/;
+
+  if (search.match(regex)) {
+    let [field, key] = search.split(':');
+    field = field.toLowerCase();
+    //karena field hanya terdiri dari name dan email
+    //dan field bisa ada huurf besar/kecil, maka menggunakan toLowerCase() untuk menghindari kesalahan saat running
+    //karena itu, deklarasi field dan key saya buat dengan let, bukan const
+    switch (
+      field //menggunakan switch case untuk mengecek name atau email
+    ) {
+      case 'name':
+        filteredUsers = await usersRepository.getUserByName(key);
+        break;
+      case 'email':
+        filteredUsers = await usersRepository.getUserByEmail(key);
+        break;
+    }
+  } else {
+    //Sesuai intruksi soal, jika format salah/tidak diisi, akan mengembalikan null / tidak ada data apapun
+    return null;
+  }
+
+  //langkah kedua SORT
+}
+
 module.exports = {
   getUsers,
   getUser,
@@ -196,4 +234,5 @@ module.exports = {
   updateUser,
   deleteUser,
   changePassword,
+  filteringUsers,
 };

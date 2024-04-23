@@ -72,6 +72,15 @@ async function getUserByEmail(email) {
 }
 
 /**
+ * ini tambahan untuk mencari user di field name. sama persis dengan getUserByEmail namun bedanya adalah get user melalui name
+ * @param {string} name
+ * @returns {Promise}
+ */
+async function getUserByName(name) {
+  return User.findOne({ name });
+}
+
+/**
  * Update user password
  * @param {string} id - User ID
  * @param {string} password - New hashed password
@@ -88,5 +97,6 @@ module.exports = {
   updateUser,
   deleteUser,
   getUserByEmail,
+  getUserByName,
   changePassword,
 };
