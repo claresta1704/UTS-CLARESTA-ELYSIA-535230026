@@ -1,6 +1,6 @@
 const usersService = require('./users-service');
-const usersRepository = require('./users-repository');
 const { errorResponder, errorTypes } = require('../../../core/errors');
+const { use } = require('express/lib/router');
 
 /**
  * Handle get list of users request
@@ -11,7 +11,7 @@ const { errorResponder, errorTypes } = require('../../../core/errors');
  */
 async function getUsers(request, response, next) {
   try {
-    const users = await usersService.getUsers();
+    const users = await filteringUsers(request, response, next);
     return response.status(200).json(users);
   } catch (error) {
     return next(error);
@@ -197,34 +197,89 @@ async function changePassword(request, response, next) {
  * @param {object} next - Express route middlewares
  * @returns {object} Response object or pass an error to the next route
  */
-async function filteringUsers(sort, search, page_size, page_number) {
-  //Sesuai intruksi soal, langkahnya adalah sort, search, page_size, lalu page_number
-  //Langkah pertama SEARCH
-  let filteredUsers;
-  const regex = /^[a-zA-Z]+:[\w\s\S]+$/;
+async function filteringUsers(request, response, next) {
+  try {
+    const search = request.query.search || null;
+    const sort = request.query.sort || 'email:asc';
+    const page_size = parseInt(request.query.page_size) || null;
+    const page_number = parseInt(request.query.page_number) || null;
 
-  if (search.match(regex)) {
-    let [field, key] = search.split(':');
-    field = field.toLowerCase();
-    //karena field hanya terdiri dari name dan email
-    //dan field bisa ada huurf besar/kecil, maka menggunakan toLowerCase() untuk menghindari kesalahan saat running
-    //karena itu, deklarasi field dan key saya buat dengan let, bukan const
-    switch (
-      field //menggunakan switch case untuk mengecek name atau email
-    ) {
-      case 'name':
-        filteredUsers = await usersRepository.getUserByName(key);
-        break;
-      case 'email':
-        filteredUsers = await usersRepository.getUserByEmail(key);
-        break;
+    let filteredUsers = [];
+    if(search==null && page_size==null && page_number==null){
+      const usersPure = await usersService.getUsers();
+      return response.status(200).json(usersPure);
     }
-  } else {
-    //Sesuai intruksi soal, jika format salah/tidak diisi, akan mengembalikan null / tidak ada data apapun
-    return null;
-  }
+    //SEARCH
+    if (search != null){
+      let [field, key] = search.split(':');
+      field = field.toLowerCase();
+      filteredUsers = await usersService.searchUsers(field, key);
+    }else{
+      return null;
+    }
 
-  //langkah kedua SORT
+    //  //SEARCH
+    //  if (search != null){
+    //   const regexSearch = /^[email|name]:[\w\s\S]+$/;
+    //   if(search.match(regexSearch)){
+    //     let [field, key] = search.split(':');
+    //     field = field.toLowerCase();
+    //     filteredUsers = await usersService.search(field, key);
+    //   } else {
+    //     return response.status(400).json({error: 'tambahkan search'})
+    //   }
+    // }
+
+    //SORT - karena sudah dibuat default jika tidak diisi, jadi tidak pakai if(sort != null)
+    let [fieldSort, sortOrder] = sort.split(':');
+    fieldSort = fieldSort.toLowerCase();
+    sortOrder = sortOrder.toLowerCase();
+    filteredUsers = await usersService.sort(fieldSort, sortOrder);
+    
+    //PAGE NUMBER & PAGE SIZE
+    const userPerPage = 10;
+    let indexAwal = (page_number - 1) * userPerPage;
+    let indexAkhir = indexAwal + page_size;
+
+    if (page_size < 0 || page_number < 0) {
+    //saat di users-route sudah mengubah parameter page_size dan page_number menjadi integer, jadi disini hanya cek apakah bilangan positif atau bukan
+      throw errorResponder(
+        errorTypes.BAD_REQUEST,
+        'page_size dan page_number harus angka integer positif'
+      );
+    }
+    if (page_number != null && page_size != null) {
+        //untuk page_number dan page_size tidak kosong
+        if (page_size < 0 || page_number < 0) {
+          //saat di users-route sudah mengubah parameter page_size dan page_number menjadi integer, jadi disini hanya cek apakah bilangan positif atau bukan
+            throw errorResponder(
+              errorTypes.BAD_REQUEST,
+              'page_size dan page_number harus angka integer positif'
+            );
+          }
+        filteredUsers = filteredUsers.slice(indexAwal, indexAkhir);
+        return response.status(200).json(filteredUsers);
+      } else if (page_number != null && page_size == null) {
+        //untuk page_number tidak kosong dan page_size kosong
+        if (page_size < 0 || page_number < 0) {
+          //saat di users-route sudah mengubah parameter page_size dan page_number menjadi integer, jadi disini hanya cek apakah bilangan positif atau bukan
+            throw errorResponder(
+              errorTypes.BAD_REQUEST,
+              'page_size dan page_number harus angka integer positif'
+            );
+          }
+        indexAwal = (page_number - 1) * userPerPage;
+        indexAkhir = indexAwal + userPerPage;
+        filteredUsers = filteredUsers.slice(indexAwal, indexAkhir);
+        return response.status(200).json(filteredUsers);
+      } else if (page_number == null) {
+        //untuk page_number kosong
+        return response.status(200).json(filteredUsers);
+      }
+
+  } catch (error) {
+    return next(error);
+  }
 }
 
 module.exports = {

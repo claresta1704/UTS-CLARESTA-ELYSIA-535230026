@@ -9,6 +9,77 @@ async function getUsers() {
 }
 
 /**
+ * fungsi search
+ * @param {string} fieldName
+ * @param {string} searchKey
+ * @returns {Promise}
+ */
+async function search(fieldName, searchKey){
+  const query = {};
+
+  switch (fieldName){
+    case 'name':
+      query.name = {$regex: new RegExp(searchKey, 'i')};
+      break;
+    case 'email' :
+      query.email = {$regex: new RegExp(searchKey, 'i')};
+      break;
+    default:
+      return null;
+  }
+
+  const users = await User.find(query);
+  return users;
+  
+  // const searching = {};
+
+  // switch (fieldName) {
+  //   case 'name' :
+  //     searching.name = searchKey;
+  //     break;
+  //   case 'email' :
+  //     searching.email = searchKey;
+  //     break;
+  //   default :
+  //     return null;
+  // }
+
+  // const searched = await User.find({name: Jeonghan});
+  // return searched;
+}
+
+/**
+ * fungsi sort
+ * @param {string} field_name
+ * @param {string} sort
+ * @returns {Promise}
+ */
+async function sort(field_name, sort){
+  let sorted;
+  let sortOrder;
+  if(sort == 'asc'){
+    sortOrder = 1;
+  }else if(sort == 'desc'){
+    sortOrder = -1;
+  }else{
+    sortOrder = 1;
+  }
+
+  switch (field_name) {
+    case 'name' :
+      sorted = await User.find({}).sort({name: sortOrder});
+      break;
+    case 'email' :
+      sorted = await User.find({}).sort({email: sortOrder});
+      break;
+    default:
+      sorted = await User.find({}).sort({email: sortOrder});
+  }
+
+  return sorted;
+}
+
+/**
  * Get user detail
  * @param {string} id - User ID
  * @returns {Promise}
@@ -72,15 +143,6 @@ async function getUserByEmail(email) {
 }
 
 /**
- * ini tambahan untuk mencari user di field name. sama persis dengan getUserByEmail namun bedanya adalah get user melalui name
- * @param {string} name
- * @returns {Promise}
- */
-async function getUserByName(name) {
-  return User.findOne({ name });
-}
-
-/**
  * Update user password
  * @param {string} id - User ID
  * @param {string} password - New hashed password
@@ -92,11 +154,12 @@ async function changePassword(id, password) {
 
 module.exports = {
   getUsers,
+  search,
+  sort,
   getUser,
   createUser,
   updateUser,
   deleteUser,
   getUserByEmail,
-  getUserByName,
   changePassword,
 };

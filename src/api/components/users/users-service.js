@@ -1,4 +1,5 @@
 const usersRepository = require('./users-repository');
+const { User } = require('../../../models');
 const { hashPassword, passwordMatched } = require('../../../utils/password');
 
 /**
@@ -22,6 +23,38 @@ async function getUsers() {
 }
 
 /**
+ * search user
+ * @param {string} field
+ * @param {string} key
+ * @returns {Array}
+ */
+async function searchUsers(field, key) {
+  const searched = await usersRepository.search(field, key);
+  const results = [];
+  for (let i = 0; i < searched.length; i++) {
+    const user = searched[i];
+    results.push({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    });
+  }
+
+  return (results);
+}
+
+/**
+ * sort
+ * @param {string} field
+ * @param {string} sort_order
+ * @returns {Array}
+ */
+async function sort (field, sort_order){
+  const sorted = usersRepository.sort(field, sort_order);
+  return sorted;
+}
+
+/**
  * Get user detail
  * @param {string} id - User ID
  * @returns {Object}
@@ -40,6 +73,7 @@ async function getUser(id) {
     email: user.email,
   };
 }
+
 
 /**
  * Create new user
@@ -170,6 +204,8 @@ async function changePassword(userId, password) {
 module.exports = {
   getUsers,
   getUser,
+  searchUsers,
+  sort,
   createUser,
   updateUser,
   deleteUser,
