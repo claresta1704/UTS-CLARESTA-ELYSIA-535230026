@@ -9,53 +9,13 @@ async function getUsers() {
 }
 
 /**
- * fungsi search
- * @param {string} fieldName
- * @param {string} searchKey
- * @returns {Promise}
- */
-async function search(fieldName, searchKey){
-  const query = {};
-
-  switch (fieldName){
-    case 'name':
-      query.name = {$regex: new RegExp(searchKey, 'i')};
-      break;
-    case 'email' :
-      query.email = {$regex: new RegExp(searchKey, 'i')};
-      break;
-    default:
-      return null;
-  }
-
-  const users = await User.find(query);
-  return users;
-  
-  // const searching = {};
-
-  // switch (fieldName) {
-  //   case 'name' :
-  //     searching.name = searchKey;
-  //     break;
-  //   case 'email' :
-  //     searching.email = searchKey;
-  //     break;
-  //   default :
-  //     return null;
-  // }
-
-  // const searched = await User.find({name: Jeonghan});
-  // return searched;
-}
-
-/**
  * fungsi sort
+ * @param {Array} array
  * @param {string} field_name
  * @param {string} sort
  * @returns {Promise}
  */
-async function sort(field_name, sort){
-  let sorted;
+async function sort(array, field_name, sort){
   let sortOrder;
   if(sort == 'asc'){
     sortOrder = 1;
@@ -65,16 +25,15 @@ async function sort(field_name, sort){
     sortOrder = 1;
   }
 
-  switch (field_name) {
-    case 'name' :
-      sorted = await User.find({}).sort({name: sortOrder});
-      break;
-    case 'email' :
-      sorted = await User.find({}).sort({email: sortOrder});
-      break;
-    default:
-      sorted = await User.find({}).sort({email: sortOrder});
-  }
+  let sorted = await array.sort((colSatu, colDua) => {
+    if(colSatu[field_name] < colDua[field_name]){
+      return (1*sortOrder);
+    }else if(colSatu[field_name] > colDua[field_name]){
+      return (-1*sortOrder);
+    }else{
+      return 0;
+    }
+  });
 
   return sorted;
 }
@@ -154,7 +113,6 @@ async function changePassword(id, password) {
 
 module.exports = {
   getUsers,
-  search,
   sort,
   getUser,
   createUser,

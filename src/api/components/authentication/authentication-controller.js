@@ -17,7 +17,7 @@ async function login(request, response, next) {
     if (limitFailedLogin >= 5){
       throw errorResponder(
         errorTypes.FORBIDDEN,
-        'Too much login attempt, wait for 30 min to continue'
+        'Too many failed login attempts'
       )
     }
 

@@ -1,6 +1,8 @@
 const usersService = require('./users-service');
 const { errorResponder, errorTypes } = require('../../../core/errors');
 const { use } = require('express/lib/router');
+const { filter } = require('lodash');
+const { boolean } = require('joi');
 
 /**
  * Handle get list of users request
@@ -205,78 +207,64 @@ async function filteringUsers(request, response, next) {
     const page_number = parseInt(request.query.page_number) || null;
 
     let filteredUsers = [];
-    if(search==null && page_size==null && page_number==null){
-      const usersPure = await usersService.getUsers();
-      return response.status(200).json(usersPure);
-    }
+    filteredUsers = await usersService.getUsers();
     //SEARCH
     if (search != null){
       let [field, key] = search.split(':');
       field = field.toLowerCase();
       filteredUsers = await usersService.searchUsers(field, key);
-    }else{
-      return null;
     }
-
-    //  //SEARCH
-    //  if (search != null){
-    //   const regexSearch = /^[email|name]:[\w\s\S]+$/;
-    //   if(search.match(regexSearch)){
-    //     let [field, key] = search.split(':');
-    //     field = field.toLowerCase();
-    //     filteredUsers = await usersService.search(field, key);
-    //   } else {
-    //     return response.status(400).json({error: 'tambahkan search'})
-    //   }
-    // }
 
     //SORT - karena sudah dibuat default jika tidak diisi, jadi tidak pakai if(sort != null)
     let [fieldSort, sortOrder] = sort.split(':');
     fieldSort = fieldSort.toLowerCase();
     sortOrder = sortOrder.toLowerCase();
-    filteredUsers = await usersService.sort(fieldSort, sortOrder);
+    filteredUsers = await usersService.sort(filteredUsers, fieldSort, sortOrder);
     
     //PAGE NUMBER & PAGE SIZE
-    const userPerPage = 10;
+    const userPerPage = 3;
     let indexAwal = (page_number - 1) * userPerPage;
     let indexAkhir = indexAwal + page_size;
 
     if (page_size < 0 || page_number < 0) {
-    //saat di users-route sudah mengubah parameter page_size dan page_number menjadi integer, jadi disini hanya cek apakah bilangan positif atau bukan
-      throw errorResponder(
-        errorTypes.BAD_REQUEST,
-        'page_size dan page_number harus angka integer positif'
-      );
+    //sdi awal fungsi sudah mengubah parameter page_size dan page_number menjadi integer
+    //jadi disini hanya cek apakah bilangan positif atau bukan
+      return response.status(400).json('page_size dan page_number harus bilangan positif');
     }
-    if (page_number != null && page_size != null) {
-        //untuk page_number dan page_size tidak kosong
-        if (page_size < 0 || page_number < 0) {
-          //saat di users-route sudah mengubah parameter page_size dan page_number menjadi integer, jadi disini hanya cek apakah bilangan positif atau bukan
-            throw errorResponder(
-              errorTypes.BAD_REQUEST,
-              'page_size dan page_number harus angka integer positif'
-            );
-          }
-        filteredUsers = filteredUsers.slice(indexAwal, indexAkhir);
-        return response.status(200).json(filteredUsers);
-      } else if (page_number != null && page_size == null) {
-        //untuk page_number tidak kosong dan page_size kosong
-        if (page_size < 0 || page_number < 0) {
-          //saat di users-route sudah mengubah parameter page_size dan page_number menjadi integer, jadi disini hanya cek apakah bilangan positif atau bukan
-            throw errorResponder(
-              errorTypes.BAD_REQUEST,
-              'page_size dan page_number harus angka integer positif'
-            );
-          }
-        indexAwal = (page_number - 1) * userPerPage;
-        indexAkhir = indexAwal + userPerPage;
-        filteredUsers = filteredUsers.slice(indexAwal, indexAkhir);
-        return response.status(200).json(filteredUsers);
-      } else if (page_number == null) {
-        //untuk page_number kosong
-        return response.status(200).json(filteredUsers);
-      }
 
+    if (page_number != null && page_size != null) { //untuk page_number dan page_size tidak kosong
+        filteredUsers = filteredUsers.slice(indexAwal, indexAkhir);
+    } else if (page_number != null && page_size == null) { //untuk page_number tidak kosong dan page_size kosong
+      indexAwal = (page_number - 1) * userPerPage;
+      indexAkhir = indexAwal + userPerPage;
+      filteredUsers = filteredUsers.slice(indexAwal, indexAkhir);
+    }
+
+    let totalUser = await usersService.countUsers(); //hitung dulu total user yang ada
+    let total_page;
+    if(totalUser % userPerPage !== 0){ //jika hasilnya bukan integer, dibulatkan keatas
+      total_page = (parseInt(totalUser/userPerPage))+1; //misalnya 13/10, jadi page nya akan ada 2
+    } else if(totalUser % userPerPage == 0){ //jika hasilnya sudah integer
+      total_page = totalUser/userPerPage;
+    }
+    let has_previous_page = (indexAwal-1 !== -1); //bernilai true jika index awal dikurangi 1, hasilnya bukan -1(-1 berarti sudah lewat indec)
+    let has_next_page = (indexAkhir+1 <= totalUser); //bernilai true jika index akhir ditambah 1, hasilnya tidak lebih dari total user
+
+    const result = {};
+    if(page_number !== null){
+      result.page_number = page_number;
+    }
+    if(page_size !== null){
+      result.page_size = userPerPage;
+      result.count = page_size;
+    } else {
+      result.count = userPerPage;
+    }
+    result.total_pages = total_page;
+    result.has_previous_page = has_previous_page;
+    result.has_next_page = has_next_page;
+    result.data = filteredUsers;
+    return response.status(200).json(result);
   } catch (error) {
     return next(error);
   }

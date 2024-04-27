@@ -23,34 +23,60 @@ async function getUsers() {
 }
 
 /**
+ * //Menghitung jumlah user keseluruhan
+ * @returns {number}
+ */
+async function countUsers(){
+  const counted = await usersRepository.getUsers();
+  let count = 0;
+  for(let j = 0; j < counted.length; j++){
+    count = count + 1;
+  };
+  return (count);
+}
+
+/**
  * search user
  * @param {string} field
  * @param {string} key
  * @returns {Array}
  */
 async function searchUsers(field, key) {
-  const searched = await usersRepository.search(field, key);
-  const results = [];
-  for (let i = 0; i < searched.length; i++) {
-    const user = searched[i];
-    results.push({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-    });
+  const pengguna = await getUsers();
+  
+  const hasil = [];
+  for(let i=0; i < pengguna.length; i++){
+    const searched = pengguna[i];
+    if(field == 'name'){
+      if(searched.name.includes(key)){
+        hasil.push({
+          id: searched.id,
+          name: searched.name,
+          email: searched.email,
+        });
+      }
+    } else if (field == 'email'){
+      if(searched.email.includes(key)){
+        hasil.push({
+          id: searched.id,
+          name: searched.name,
+          email: searched.email,
+        })
+      }
+    }
   }
-
-  return (results);
+  return hasil;
 }
 
 /**
  * sort
+ * @param {Array} array
  * @param {string} field
  * @param {string} sort_order
  * @returns {Array}
  */
-async function sort (field, sort_order){
-  const sorted = usersRepository.sort(field, sort_order);
+async function sort (array, field, sort_order){
+  const sorted = usersRepository.sort(array, field, sort_order);
   return sorted;
 }
 
@@ -203,6 +229,7 @@ async function changePassword(userId, password) {
 
 module.exports = {
   getUsers,
+  countUsers,
   getUser,
   searchUsers,
   sort,
