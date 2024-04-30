@@ -27,9 +27,9 @@ async function sort(array, field_name, sort){
 
   let sorted = await array.sort((colSatu, colDua) => {
     if(colSatu[field_name] < colDua[field_name]){
-      return (1*sortOrder);
-    }else if(colSatu[field_name] > colDua[field_name]){
       return (-1*sortOrder);
+    }else if(colSatu[field_name] > colDua[field_name]){
+      return (1*sortOrder);
     }else{
       return 0;
     }

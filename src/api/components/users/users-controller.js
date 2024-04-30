@@ -202,40 +202,52 @@ async function changePassword(request, response, next) {
 async function filteringUsers(request, response, next) {
   try {
     const search = request.query.search || null;
-    const sort = request.query.sort || 'email:asc';
+    const sort = request.query.sort || 'email:asc'; //ini defaultnya jika tidak diisi berarti sorting secara asc pada email
     const page_size = parseInt(request.query.page_size) || null;
     const page_number = parseInt(request.query.page_number) || null;
 
     let filteredUsers = [];
-    filteredUsers = await usersService.getUsers();
+    const regexSearch = /^(email|name):[\w\s\S]+$/i;
+
     //SEARCH
-    if (search != null){
-      let [field, key] = search.split(':');
+    if (search != null){ //Jika search diisi
+      let [field, key] = search.split(':'); //memisahkan parameter 
       field = field.toLowerCase();
-      filteredUsers = await usersService.searchUsers(field, key);
+      if(search.match(regexSearch)){
+        filteredUsers = await usersService.searchUsers(field, key);
+      } else {
+        filteredUsers = await usersService.getUsers();
+      }
+    } else if (search == null){
+      filteredUsers = await usersService.getUsers();
     }
 
     //SORT - karena sudah dibuat default jika tidak diisi, jadi tidak pakai if(sort != null)
     let [fieldSort, sortOrder] = sort.split(':');
-    fieldSort = fieldSort.toLowerCase();
+    fieldSort = fieldSort.toLowerCase(); //dibuat huruf kecil untuk mengurangi resiko terjadi error
     sortOrder = sortOrder.toLowerCase();
     filteredUsers = await usersService.sort(filteredUsers, fieldSort, sortOrder);
-    
+
     //PAGE NUMBER & PAGE SIZE
-    const userPerPage = 3;
+    const userPerPage = 10;
+    //dibawah ini default jika page_number dan page_size ada isinya. Kalau ada yang gak diisi, berarti bisa berubah. Oleh karena itu, disini pakai let, bukan const
     let indexAwal = (page_number - 1) * userPerPage;
+    //note indexAwal : misal total ada 4 halaman, userPerPage nya 3
+    //jika mau dikeluarkan semua yang di halaman 2, max users nya 2, maka index total users yang di page 2 berarti 3,4,5 (index mulai dari 0)
+    //index awalnya 3. Untuk mendapatkan 3, (nomor halaman yang diinginkan - 1)*userPerPage => (2-1)*3 => 1*3 = 3
     let indexAkhir = indexAwal + page_size;
+    //node indexAkhir : dengan pemisalan yang sama
+    //index akhirnya 5. Untuk dapat 5, (index awal + max users yang dimau) => 3+2 = 5
 
     if (page_size < 0 || page_number < 0) {
-    //sdi awal fungsi sudah mengubah parameter page_size dan page_number menjadi integer
-    //jadi disini hanya cek apakah bilangan positif atau bukan
-      return response.status(400).json('page_size dan page_number harus bilangan positif');
+    //cek terlebih dulu apakah page_size dan page_numbernya bilangan positif, sesuai intruksi soal
+      return response.status(400).json('page_size dan page_number harus bilangan integer positif');
     }
 
-    if (page_number != null && page_size != null) { //untuk page_number dan page_size tidak kosong
-        filteredUsers = filteredUsers.slice(indexAwal, indexAkhir);
-    } else if (page_number != null && page_size == null) { //untuk page_number tidak kosong dan page_size kosong
-      indexAwal = (page_number - 1) * userPerPage;
+    if (page_number != null && page_size != null) { //jika page_number dan page_size tidak kosong, maka-
+        filteredUsers = filteredUsers.slice(indexAwal, indexAkhir); //indexAwal dan indexAkhir memakai default yang tadi
+    } else if (page_number != null && page_size == null) { //jika page_number ada isi, tapi page_size tidak diisi, maka-
+      indexAwal = (page_number - 1) * userPerPage; //index akhirnya beru
       indexAkhir = indexAwal + userPerPage;
       filteredUsers = filteredUsers.slice(indexAwal, indexAkhir);
     }
@@ -243,23 +255,21 @@ async function filteringUsers(request, response, next) {
     let totalUser = await usersService.countUsers(); //hitung dulu total user yang ada
     let total_page;
     if(totalUser % userPerPage !== 0){ //jika hasilnya bukan integer, dibulatkan keatas
-      total_page = (parseInt(totalUser/userPerPage))+1; //misalnya 13/10, jadi page nya akan ada 2
+      total_page = (parseInt(totalUser/userPerPage))+1; //misalnya 13/10, integernya kan 1, tambah 1 jadi page nya akan ada 2
     } else if(totalUser % userPerPage == 0){ //jika hasilnya sudah integer
-      total_page = totalUser/userPerPage;
+      total_page = totalUser/userPerPage; //tidak pakai parseInt lagi
     }
     let has_previous_page = (indexAwal-1 !== -1); //bernilai true jika index awal dikurangi 1, hasilnya bukan -1(-1 berarti sudah lewat indec)
     let has_next_page = (indexAkhir+1 <= totalUser); //bernilai true jika index akhir ditambah 1, hasilnya tidak lebih dari total user
+    let count = filteredUsers.length;
 
+    //Untuk OUTPUT
     const result = {};
     if(page_number !== null){
       result.page_number = page_number;
     }
-    if(page_size !== null){
-      result.page_size = userPerPage;
-      result.count = page_size;
-    } else {
-      result.count = userPerPage;
-    }
+    result.page_size = userPerPage;
+    result.count = count;
     result.total_pages = total_page;
     result.has_previous_page = has_previous_page;
     result.has_next_page = has_next_page;
