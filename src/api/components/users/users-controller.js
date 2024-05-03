@@ -13,7 +13,7 @@ const { boolean } = require('joi');
  */
 async function getUsers(request, response, next) {
   try {
-    const users = await filteringUsers(request, response, next);
+    const users = await filteringUsers(request, response, next); //kita ganti awaitnya jadi ke fungsi filteringUsers di file ini
     return response.status(200).json(users);
   } catch (error) {
     return next(error);
@@ -203,31 +203,39 @@ async function filteringUsers(request, response, next) {
   try {
     const search = request.query.search || null;
     const sort = request.query.sort || 'email:asc'; //ini defaultnya jika tidak diisi berarti sorting secara asc pada email
-    const page_size = parseInt(request.query.page_size) || null;
+    const page_size = parseInt(request.query.page_size) || null; //page_size dan page_number otomatis merubah parameter jadi integer
     const page_number = parseInt(request.query.page_number) || null;
 
     let filteredUsers = [];
-    const regexSearch = /^(email|name):[\w\s\S]+$/i;
+    const regexSearch = /^(email|name):[\w\s\S]+$/i; //kata awal harus antara email atau name, lalu ada : nya, terakhir boleh \w(huruf, angka, underscore), \s(spasi), \S(simbol), + artinya set karakter terakhir harus ada setidaknya 1
+    const regexSort = /^(email|name):(asc|desc)$/i; //kata awal harus antara email atau name, lalu ada : nya, terakhir antara asc atau desc
 
     //SEARCH
     if (search != null){ //Jika search diisi
-      let [field, key] = search.split(':'); //memisahkan parameter 
-      field = field.toLowerCase();
-      if(search.match(regexSearch)){
+      let [field, key] = search.split(':'); //memisahkan parameter search dengan :. sebelum : jadi field, setelah : jadi key
+      field = field.toLowerCase(); //mengubah field jadi huruf kecil untuk meminimalkan resiko error saat searchUsers di users-service
+      if(search.match(regexSearch)){ //jika formatnya sesuai
         filteredUsers = await usersService.searchUsers(field, key);
-      } else {
+      } else { //jika formatnya tidak sesuai, search dianggap tidak ada
         filteredUsers = await usersService.getUsers();
       }
-    } else if (search == null){
+    } else if (search == null){ //jika tidak diisi, search dianggap tidak ada
       filteredUsers = await usersService.getUsers();
     }
 
-    //SORT - karena sudah dibuat default jika tidak diisi, jadi tidak pakai if(sort != null)
-    let [fieldSort, sortOrder] = sort.split(':');
-    fieldSort = fieldSort.toLowerCase(); //dibuat huruf kecil untuk mengurangi resiko terjadi error
-    sortOrder = sortOrder.toLowerCase();
-    filteredUsers = await usersService.sort(filteredUsers, fieldSort, sortOrder);
+    const fieldSortDefault = 'email'; //disini membuat fieldSort dan sortOrder default untuk kalau sort nya salah format
+    const sortOrderDefault = 'asc';
 
+    //SORT - karena sudah dibuat default jika tidak diisi, jadi tidak pakai if(sort != null)
+    if(sort.match(regexSort)){
+      let [fieldSort, sortOrder] = sort.split(':');
+      fieldSort = fieldSort.toLowerCase(); //dibuat huruf kecil untuk mengurangi resiko terjadi error
+      sortOrder = sortOrder.toLowerCase();
+      filteredUsers = await usersService.sort(filteredUsers, fieldSort, sortOrder);
+    }else if(sort.match(regexSort)){
+      filteredUsers = await usersService.sort(filteredUsers, fieldSortDefault, sortOrderDefault);
+    }
+    
     //PAGE NUMBER & PAGE SIZE
     const userPerPage = 10;
     //dibawah ini default jika page_number dan page_size ada isinya. Kalau ada yang gak diisi, berarti bisa berubah. Oleh karena itu, disini pakai let, bukan const
@@ -247,9 +255,9 @@ async function filteringUsers(request, response, next) {
     if (page_number != null && page_size != null) { //jika page_number dan page_size tidak kosong, maka-
         filteredUsers = filteredUsers.slice(indexAwal, indexAkhir); //indexAwal dan indexAkhir memakai default yang tadi
     } else if (page_number != null && page_size == null) { //jika page_number ada isi, tapi page_size tidak diisi, maka-
-      indexAwal = (page_number - 1) * userPerPage; //index akhirnya beru
-      indexAkhir = indexAwal + userPerPage;
-      filteredUsers = filteredUsers.slice(indexAwal, indexAkhir);
+      indexAwal = (page_number - 1) * userPerPage;
+      indexAkhir = indexAwal + userPerPage; //index akhirnya jadi index awal + userPerpage, karena jika page_size tidak diisi, akan menampilkan semua user dalam 1 halaman (userPerPage)
+      filteredUsers = filteredUsers.slice(indexAwal, indexAkhir); //dipotong, diambil dari indexAwal sampai indexAkhir
     }
 
     let totalUser = await usersService.countUsers(); //hitung dulu total user yang ada

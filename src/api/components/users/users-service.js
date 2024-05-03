@@ -27,7 +27,7 @@ async function getUsers() {
  * @returns {number}
  */
 async function countUsers(){
-  const counted = await usersRepository.getUsers();
+  const counted = await usersRepository.getUsers(); //kita pakai getUser dulu, nanti dari getUser dimasukkan lagi ke array baru
   let count = 0;
   for(let j = 0; j < counted.length; j++){
     count = count + 1;
@@ -45,9 +45,9 @@ async function searchUsers(field, key) {
   const pengguna = await getUsers();
   
   const hasil = [];
-  for(let i=0; i < pengguna.length; i++){
+  for(let i=0; i < pengguna.length; i++){ //kita pakai getUsers untuk mengambil semua data user dulu
     const searched = pengguna[i];
-    if(field == 'name'){
+    if(field == 'name'){ //baru disini, dicari data tertentu sesuai search
       if(searched.name.includes(key)){
         hasil.push({
           id: searched.id,
@@ -76,7 +76,7 @@ async function searchUsers(field, key) {
  * @returns {Array}
  */
 async function sort (array, field, sort_order){
-  const sorted = usersRepository.sort(array, field, sort_order);
+  const sorted = usersRepository.sort(array, field, sort_order); //memanggil fungsi sort di usersRepository
   return sorted;
 }
 
