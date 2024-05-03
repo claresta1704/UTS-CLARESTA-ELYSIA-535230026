@@ -50,34 +50,38 @@ async function getAccount(id) {
 /**
  * Create new account
  * @param {string} name - Name
+ * @param {string} mothers_name - Nama ibu kandung
  * @param {string} email - Email
- * @param {string} password - Hashed password
+ * @param {string} noTelp - Nomor telepom
+ * @param {string} pin - Hashed pin
  * @returns {Promise}
  */
-async function createAccount(name, email, password) {
+async function createAccount(name, mothers_name, email, noTelp, pin) {
   return Account.create({
     name,
+    mothers_name,
     email,
-    password,
+    noTelp,
+    pin,
   });
 }
 
 /**
  * Update existing account
  * @param {string} id - Account ID
- * @param {string} name - Name
- * @param {string} email - Email
+ * @param {string} mothers_name - Name
+ * @param {string} pin - Email
  * @returns {Promise}
  */
-async function updateAccount(id, name, email) {
+async function updateAccount(id, mothers_name, pin) {
   return Account.updateOne(
     {
       _id: id,
     },
     {
       $set: {
-        name,
-        email,
+        mothers_name,
+        pin,
       },
     }
   );
@@ -93,22 +97,22 @@ async function deleteAccount(id) {
 }
 
 /**
- * Get account by email to prevent duplicate email
- * @param {string} email - Email
+ * Get account buat cek nomor telpon sudah ada atau belum
+ * @param {string} noTelp - Email
  * @returns {Promise}
  */
-async function getAccountByEmail(email) {
-  return Account.findOne({ email });
+async function getAccountBynoTelp(noTelp) {
+  return Account.findOne({ noTelp });
 }
 
 /**
  * Update account password
  * @param {string} id - Account ID
- * @param {string} password - New hashed password
+ * @param {string} pin - New hashed pin
  * @returns {Promise}
  */
-async function changePassword(id, password) {
-  return Account.updateOne({ _id: id }, { $set: { password } });
+async function changePassword(id, pin) {
+  return Account.updateOne({ _id: id }, { $set: { pin } });
 }
 
 module.exports = {
@@ -118,6 +122,6 @@ module.exports = {
   createAccount,
   updateAccount,
   deleteAccount,
-  getAccountByEmail,
+  getAccountBynoTelp,
   changePassword,
 };

@@ -1,6 +1,6 @@
 const accountsRepository = require('./accounts-repository');
 const { Account } = require('../../../models');
-const { hashPassword, passwordMatched } = require('../../../utils/password');
+const { hashPin, passwordMatched } = require('../../../utils/password');
 
 /**
  * Get list of accounts
@@ -16,6 +16,7 @@ async function getAccounts() {
       id: account.id,
       name: account.name,
       email: account.email,
+      noTelp: account.noTelp,
     });
   }
 
@@ -53,6 +54,7 @@ async function searchAccounts(field, key) {
           id: searched.id,
           name: searched.name,
           email: searched.email,
+          noTelp: searched.noTelp,
         });
       }
     } else if (field == 'email'){
@@ -61,6 +63,7 @@ async function searchAccounts(field, key) {
           id: searched.id,
           name: searched.name,
           email: searched.email,
+          noTelp: searched.noTelp,
         })
       }
     }
@@ -97,23 +100,25 @@ async function getAccount(id) {
     id: account.id,
     name: account.name,
     email: account.email,
+    noTelp: account.noTelp,
   };
 }
-
 
 /**
  * Create new account
  * @param {string} name - Name
- * @param {string} email - Email
- * @param {string} password - Password
+ * @param {string} mothers_name - nama ibu kandung
+ * @param {string} email - email
+ * @param {string} noTelp - nomor telepon
+ * @param {string} pin - pin
  * @returns {boolean}
  */
-async function createAccount(name, email, password) {
-  // Hash password
-  const hashedPassword = await hashPassword(password);
+async function createAccount(name, mothers_name, email, noTelp, pin) {
+  // Hash pin
+  const hashedPin= await hashPin(pin);
 
   try {
-    await accountsRepository.createAccount(name, email, hashedPassword);
+    await accountsRepository.createAccount(name, mothers_name, email, noTelp, hashedPin);
   } catch (err) {
     return null;
   }
@@ -124,11 +129,12 @@ async function createAccount(name, email, password) {
 /**
  * Update existing account
  * @param {string} id - Account ID
- * @param {string} name - Name
- * @param {string} email - Email
+ * @param {string} mothers_name - Name
+ * @param {string} password - Email
+ * @param {string} password_confirm
  * @returns {boolean}
  */
-async function updateAccount(id, name, email) {
+async function updateAccount(id, mothers_name, password, password_confirm) {
   const account = await accountsRepository.getAccount(id);
 
   // Account not found
@@ -137,7 +143,7 @@ async function updateAccount(id, name, email) {
   }
 
   try {
-    await accountsRepository.updateAccount(id, name, email);
+    await accountsRepository.updateAccount(id, mothers_name, password, password_confirm);
   } catch (err) {
     return null;
   }
@@ -169,11 +175,11 @@ async function deleteAccount(id) {
 
 /**
  * Check whether the email is registered
- * @param {string} email - Email
+ * @param {string} noTelp - Email
  * @returns {boolean}
  */
-async function emailIsRegistered(email) {
-  const account = await accountsRepository.getAccountByEmail(email);
+async function noTelpIsRegistered(noTelp) {
+  const account = await accountsRepository.getAccountBynoTelp(noTelp);
 
   if (account) {
     return true;
@@ -191,21 +197,21 @@ async function emailIsRegistered(email) {
 /**
  * Check whether the password is correct
  * @param {string} accountId - Account ID
- * @param {string} password - Password
+ * @param {string} pin - Password
  * @returns {boolean}
  */
-async function checkPassword(accountId, password) {
+async function checkPassword(accountId, pin) {
   const account = await accountsRepository.getAccount(accountId);
-  return passwordMatched(password, account.password);
+  return passwordMatched(pin, account.pin);
 }
 
 /**
  * Change account password
  * @param {string} accountId - Account ID
- * @param {string} password - Password
+ * @param {string} pin - Password
  * @returns {boolean}
  */
-async function changePassword(accountId, password) {
+async function changePassword(accountId, pin) {
   const account = await accountsRepository.getAccount(accountId);
 
   // Check if account not found
@@ -213,11 +219,11 @@ async function changePassword(accountId, password) {
     return null;
   }
 
-  const hashedPassword = await hashPassword(password);
+  const hashedPin = await hashPin(pin);
 
   const changeSuccess = await accountsRepository.changePassword(
     accountId,
-    hashedPassword
+    hashedPin
   );
 
   if (!changeSuccess) {
@@ -236,7 +242,7 @@ module.exports = {
   createAccount,
   updateAccount,
   deleteAccount,
-  emailIsRegistered,
+  noTelpIsRegistered,
   checkPassword,
   changePassword,
 };

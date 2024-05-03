@@ -124,6 +124,11 @@ const errorTypes = {
     status: 409,
     code: 'EMAIL_ALREADY_TAKEN_ERROR',
   },
+  NOTELP_ALREADY_TAKEN: {
+    description: 'This phone number already taken, try use another',
+    status: 409,
+    code: 'NOTELP_ALREADY_TAKEN_ERROR',
+  },
   SEND_EMAIL: {
     description: 'Send email error',
     status: 500,

@@ -21,6 +21,26 @@ async function hashPassword(password) {
 }
 
 /**
+ * Hash a plain text password
+ * @param {string} pin - The password to be hashed
+ * @returns {string}
+ */
+async function hashPin(pin) {
+  const saltRounds = 16;
+  const hashedPin = await new Promise((resolve, reject) => {
+    bcrypt.hash(pin, saltRounds, (err, hash) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(hash);
+      }
+    });
+  });
+
+  return hashedPin;
+}
+
+/**
  * Compares a plain text password and its hashed to determine its equality
  * Mainly use for comparing login credentials
  * @param {string} password - A plain text password
@@ -33,5 +53,6 @@ async function passwordMatched(password, hashedPassword) {
 
 module.exports = {
   hashPassword,
+  hashPin,
   passwordMatched,
 };

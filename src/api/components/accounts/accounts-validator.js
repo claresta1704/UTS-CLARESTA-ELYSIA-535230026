@@ -6,46 +6,39 @@ module.exports = {
   createAccount: {
     body: {
       name: joi.string().min(1).max(100).required().label('Name'),
-      email: joi.string().email().required().label('Email'),
-      password: joiPassword
+      mothers_name: joi
         .string()
-        .minOfSpecialCharacters(1)
-        .minOfLowercase(1)
-        .minOfUppercase(1)
-        .minOfNumeric(1)
-        .noWhiteSpaces()
-        .onlyLatinCharacters()
-        .min(6)
-        .max(32)
+        .min(1)
+        .max(100)
         .required()
-        .label('Password'),
-      password_confirm: joi.string().required().label('Password confirmation'),
+        .label('Nama ibu kandung'),
+      email: joi.string().email().required().label('Email'),
+      noTelp: joi.string().min(10).max(13).required().label('noTelp'),
+      pin: joi.string().min(6).max(6).required().label('Pin'),
+      pin_confirm: joi.string().required().label('Pin confirmation'),
     },
   },
 
   updateAccount: {
+    //updateAccount kalau akun terblokir dan mau ganti pin (harus pergi ke bank)
     body: {
-      name: joi.string().min(1).max(100).required().label('Name'),
-      email: joi.string().email().required().label('Email'),
+      mothers_name: joi
+        .string()
+        .min(1)
+        .max(100)
+        .required()
+        .label('Nama ibu kandung'),
+      pin: joi.string().min(6).max(6).required().label('Pin'),
+      pin_confirm: joi.string().required().label('Pin confirmation'),
     },
   },
 
   changePassword: {
+    //change password kalau mau ubah pin atas kemauan sendiri dan masih ingat pin lama
     body: {
-      password_old: joi.string().required().label('Old password'),
-      password_new: joiPassword
-        .string()
-        .minOfSpecialCharacters(1)
-        .minOfLowercase(1)
-        .minOfUppercase(1)
-        .minOfNumeric(1)
-        .noWhiteSpaces()
-        .onlyLatinCharacters()
-        .min(6)
-        .max(32)
-        .required()
-        .label('New password'),
-      password_confirm: joi.string().required().label('Password confirmation'),
+      pin_old: joi.string().required().label('Old pin'),
+      pin_new: joiPassword.string().min(6).max(6).required().label('New pin'),
+      pin_confirm: joi.string().required().label('Pin confirmation'),
     },
   },
 };

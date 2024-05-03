@@ -1,10 +1,13 @@
 const logger = require('../src/core/logger')('api');
 const { Account } = require('../src/models');
 const { hashPassword } = require('../src/utils/password');
+const { hashPin } = require('../src/utils/password');
 
 const name = 'Administrator';
-const email = 'admin@example.com';
-const password = '123456';
+const mothers_name = 'nama ibu';
+const email = 'default@example.com';
+const noTelp = '081234567891'
+const pin = '123456';
 
 logger.info('Creating default Accounts');
 
@@ -12,18 +15,20 @@ logger.info('Creating default Accounts');
   try {
     const numAccounts = await Account.countDocuments({
       name,
-      email,
+      noTelp,
     });
 
     if (numAccounts > 0) {
-      throw new Error(`Account ${email} already exists`);
+      throw new Error(`Account with phone number ${noTelp} already exists`);
     }
 
-    const hashedPassword = await hashPassword(password);
+    const hashedPin = await hashPin(pin);
     await Account.create({
       name,
+      mothers_name,
       email,
-      password: hashedPassword,
+      noTelp,
+      pin : hashedPin,
     });
     
   } catch (e) {

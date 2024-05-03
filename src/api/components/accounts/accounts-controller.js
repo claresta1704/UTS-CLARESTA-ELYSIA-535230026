@@ -13,7 +13,7 @@ const { boolean } = require('joi');
  */
 async function getAccounts(request, response, next) {
   try {
-    const accounts = await filteringAccounts(request, response, next); //kita ganti awaitnya jadi ke fungsi filteringAccounts di file ini
+    const accounts = await accountsService.getAccounts (request, response, next);
     return response.status(200).json(accounts);
   } catch (error) {
     return next(error);
@@ -51,12 +51,14 @@ async function getAccount(request, response, next) {
 async function createAccount(request, response, next) {
   try {
     const name = request.body.name;
+    const mothers_name = request.body.mothers_name;
     const email = request.body.email;
-    const password = request.body.password;
-    const password_confirm = request.body.password_confirm;
+    const noTelp = request.body.noTelp;
+    const pin = request.body.pin;
+    const pin_confirm = request.body.pin_confirm;
 
     // Check confirmation password
-    if (password !== password_confirm) {
+    if (pin !== pin_confirm) {
       throw errorResponder(
         errorTypes.INVALID_PASSWORD,
         'Password confirmation mismatched'
@@ -64,15 +66,15 @@ async function createAccount(request, response, next) {
     }
 
     // Email must be unique
-    const emailIsRegistered = await accountsService.emailIsRegistered(email);
-    if (emailIsRegistered) {
+    const noTelpIsRegistered = await accountsService.noTelpIsRegistered(noTelp);
+    if (noTelpIsRegistered) {
       throw errorResponder(
-        errorTypes.EMAIL_ALREADY_TAKEN,
-        'Email is already registered'
+        errorTypes.NOTELP_ALREADY_TAKEN,
+        'Phone number is already registered'
       );
     }
 
-    const success = await accountsService.createAccount(name, email, password);
+    const success = await accountsService.createAccount(name, mothers_name, email, noTelp, pin);
     if (!success) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
@@ -80,7 +82,7 @@ async function createAccount(request, response, next) {
       );
     }
 
-    return response.status(200).json({ name, email });
+    return response.status(200).json({ name, noTelp });
   } catch (error) {
     return next(error);
   }
@@ -96,19 +98,20 @@ async function createAccount(request, response, next) {
 async function updateAccount(request, response, next) {
   try {
     const id = request.params.id;
-    const name = request.body.name;
-    const email = request.body.email;
+    const mothers_name = request.body.mothers_name;
+    const pin = request.body.pin;
+    const pin_confirm = request.body.pin_confirm;
 
-    // Email must be unique
-    const emailIsRegistered = await accountsService.emailIsRegistered(email);
-    if (emailIsRegistered) {
-      throw errorResponder(
-        errorTypes.EMAIL_ALREADY_TAKEN,
-        'Email is already registered'
-      );
-    }
+    // // Email must be unique
+    // const emailIsRegistered = await accountsService.emailIsRegistered(email);
+    // if (emailIsRegistered) {
+    //   throw errorResponder(
+    //     errorTypes.EMAIL_ALREADY_TAKEN,
+    //     'Email is already registered'
+    //   );
+    // }
 
-    const success = await accountsService.updateAccount(id, name, email);
+    const success = await accountsService.updateAccount(id, mothers_name, pin, pin_confirm);
     if (!success) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
@@ -157,10 +160,10 @@ async function deleteAccount(request, response, next) {
 async function changePassword(request, response, next) {
   try {
     // Check password confirmation
-    if (request.body.password_new !== request.body.password_confirm) {
+    if (request.body.pin_new !== request.body.pin) {
       throw errorResponder(
         errorTypes.INVALID_PASSWORD,
-        'Password confirmation mismatched'
+        'Pin confirmation mismatched'
       );
     }
 
@@ -168,10 +171,10 @@ async function changePassword(request, response, next) {
     if (
       !(await accountsService.checkPassword(
         request.params.id,
-        request.body.password_old
+        request.body.pin_old
       ))
     ) {
-      throw errorResponder(errorTypes.INVALID_CREDENTIALS, 'Wrong password');
+      throw errorResponder(errorTypes.INVALID_CREDENTIALS, 'Wrong pin');
     }
 
     const changeSuccess = await accountsService.changePassword(
@@ -182,7 +185,7 @@ async function changePassword(request, response, next) {
     if (!changeSuccess) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
-        'Failed to change password'
+        'Failed to change pin'
       );
     }
 
