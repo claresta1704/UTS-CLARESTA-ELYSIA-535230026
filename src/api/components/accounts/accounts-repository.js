@@ -54,15 +54,17 @@ async function getAccount(id) {
  * @param {string} email - Email
  * @param {string} noTelp - Nomor telepom
  * @param {string} pin - Hashed pin
+ * @param {string} noRek - nomor rekening random 10 angka
  * @returns {Promise}
  */
-async function createAccount(name, mothers_name, email, noTelp, pin) {
+async function createAccount(name, mothers_name, email, noTelp, pin, noRek) {
   return Account.create({
     name,
     mothers_name,
     email,
     noTelp,
     pin,
+    noRek,
   });
 }
 

@@ -21,6 +21,15 @@ async function hashPassword(password) {
 }
 
 /**
+ * fungsi untuk membuat nomor rekening acak 10 angka
+ * @returns {string}
+ */
+function randomRekening(){
+  const noRek = Math.floor(1000000000 + Math.random() * 90000000000);
+  return noRek.toString();
+}
+
+/**
  * Hash a plain text password
  * @param {string} pin - The password to be hashed
  * @returns {string}
@@ -53,6 +62,7 @@ async function passwordMatched(password, hashedPassword) {
 
 module.exports = {
   hashPassword,
+  randomRekening,
   hashPin,
   passwordMatched,
 };

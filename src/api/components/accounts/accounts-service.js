@@ -17,6 +17,7 @@ async function getAccounts() {
       name: account.name,
       email: account.email,
       noTelp: account.noTelp,
+      noRek: account.noRek,
     });
   }
 
@@ -101,7 +102,17 @@ async function getAccount(id) {
     name: account.name,
     email: account.email,
     noTelp: account.noTelp,
+    noRek: account.noRek,
   };
+}
+
+/**
+ * fungsi untuk membuat nomor rekening acak 10 angka
+ * @returns {string}
+ */
+function randomRekening(){
+  const noRek = Math.floor(1000000000 + Math.random() * 90000000000);
+  return noRek.toString();
 }
 
 /**
@@ -116,9 +127,10 @@ async function getAccount(id) {
 async function createAccount(name, mothers_name, email, noTelp, pin) {
   // Hash pin
   const hashedPin= await hashPin(pin);
+  const noRek = randomRekening();
 
   try {
-    await accountsRepository.createAccount(name, mothers_name, email, noTelp, hashedPin);
+    await accountsRepository.createAccount(name, mothers_name, email, noTelp, hashedPin, noRek);
   } catch (err) {
     return null;
   }
