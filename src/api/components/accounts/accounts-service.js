@@ -1,6 +1,7 @@
 const accountsRepository = require('./accounts-repository');
 const { Account } = require('../../../models');
 const { hashPin, pinMatched } = require('../../../utils/password');
+const { mothers_name } = require('../../../models/accounts-schema');
 
 /**
  * Get list of accounts
@@ -288,12 +289,26 @@ async function isPinWrong(id, pin) {
 }
 
 /**
+ * Check whether the password is correct
+ * @param {string} id - Account ID
+ * @param {string} mothers_name - Password
+ * @returns {boolean}
+ */
+async function isMothersNameWrong(id, mothers_name) {
+  const account = await accountsRepository.getAccount(id);
+  if(account.mothers_name != mothers_name){
+    return false;
+  }
+  return true;
+}
+
+/**
  * Change account password
  * @param {string} accountId - Account ID
  * @param {string} pin - Password
  * @returns {boolean}
  */
-async function changePassword(accountId, pin) {
+async function changePin(accountId, pin) {
   const account = await accountsRepository.getAccount(accountId);
 
   // Check if account not found
@@ -303,7 +318,7 @@ async function changePassword(accountId, pin) {
 
   const hashedPin = await hashPin(pin);
 
-  const changeSuccess = await accountsRepository.changePassword(
+  const changeSuccess = await accountsRepository.changePin(
     accountId,
     hashedPin
   );
@@ -323,6 +338,7 @@ module.exports = {
   transferMoney,
   cekSaldo,
   isPinWrong,
+  isMothersNameWrong,
   sort,
   createAccount,
   updateNoTelp,
@@ -330,5 +346,5 @@ module.exports = {
   noTelpIsRegistered,
   tambahKurangSaldo,
   searchIdbynoRek,
-  changePassword,
+  changePin,
 };

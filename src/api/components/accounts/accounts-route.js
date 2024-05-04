@@ -43,9 +43,9 @@ module.exports = (app) => {
 
   // Change password
   route.post(
-    '/:id/change-password',
+    '/:id/change-pin',
     authenticationMiddleware,
-    celebrate(accountsValidator.changePassword),
-    accountsControllers.changePassword
+    celebrate(accountsValidator.changePin),
+    accountsControllers.changePin
   );
 };

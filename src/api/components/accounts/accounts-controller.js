@@ -232,30 +232,40 @@ async function deleteAccount(request, response, next) {
  * @param {object} next - Express route middlewares
  * @returns {object} Response object or pass an error to the next route
  */
-async function changePassword(request, response, next) {
+async function changePin(request, response, next) {
   try {
+    const id = request.params.id;
+    const mothers_name = request.body.mothers_name;
+    const pin_old = request.body.pin_old;
+    const pin_new = request.body.pin_new;
+    const pin_confirm = request.body.pin_confirm;
+
+    const motherNameRight = await accountsService.isMothersNameWrong(id, mothers_name);
+    if(!motherNameRight){
+      throw errorResponder(
+        errorTypes.INVALID_CREDENTIALS,
+        'Nama ibu salah'
+      );
+    }
+
+
+    const pinRight = await accountsService.isPinWrong(id, pin_old);
+    if (!pinRight) {
+      throw errorResponder(
+        errorTypes.INVALID_CREDENTIALS,
+        'Pin salah'
+      );
+    }
+
     // Check password confirmation
-    if (request.body.pin_new !== request.body.pin) {
+    if (pin_new !== pin_confirm) {
       throw errorResponder(
         errorTypes.INVALID_PASSWORD,
         'Pin confirmation mismatched'
       );
     }
 
-    // Check old password
-    if (
-      !(await accountsService.checkPassword(
-        request.params.id,
-        request.body.pin_old
-      ))
-    ) {
-      throw errorResponder(errorTypes.INVALID_CREDENTIALS, 'Wrong pin');
-    }
-
-    const changeSuccess = await accountsService.changePassword(
-      request.params.id,
-      request.body.password_new
-    );
+    const changeSuccess = await accountsService.changePin(id, pin_new);
 
     if (!changeSuccess) {
       throw errorResponder(
@@ -264,7 +274,7 @@ async function changePassword(request, response, next) {
       );
     }
 
-    return response.status(200).json({ id: request.params.id });
+    return response.status(200).json({ "BERHASIL MENGGANTI PIN ":id });
   } catch (error) {
     return next(error);
   }
@@ -374,6 +384,6 @@ module.exports = {
   createAccount,
   updateNoTelp,
   deleteAccount,
-  changePassword,
+  changePin,
   filteringAccounts,
 };

@@ -130,7 +130,7 @@ async function getAccountBynoTelp(noTelp) {
  * @param {string} pin - New hashed pin
  * @returns {Promise}
  */
-async function changePassword(id, pin) {
+async function changePin(id, pin) {
   return Account.updateOne({ _id: id }, { $set: { pin } });
 }
 
@@ -143,5 +143,5 @@ module.exports = {
   deleteAccount,
   getAccountBynoTelp,
   tambahKurangSaldo,
-  changePassword,
+  changePin,
 };

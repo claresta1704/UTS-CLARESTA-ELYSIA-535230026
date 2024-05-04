@@ -27,12 +27,18 @@ module.exports = {
     },
   },
 
-  changePassword: {
-    //change password kalau mau ubah pin atas kemauan sendiri dan masih ingat pin lama
+  changePin: {
+    //change password kalau mau ganti pin
     body: {
-      pin_old: joi.string().required().label('Old pin'),
-      pin_new: joiPassword.string().min(6).max(6).required().label('New pin'),
-      pin_confirm: joi.string().required().label('Pin confirmation'),
+      mothers_name: joi
+        .string()
+        .min(1)
+        .max(100)
+        .required()
+        .label('mothers_name'),
+      pin_old: joi.string().required().label('pin_old'),
+      pin_new: joiPassword.string().min(6).max(6).required().label('pin_new'),
+      pin_confirm: joi.string().required().label('pin_confirm'),
     },
   },
 };
