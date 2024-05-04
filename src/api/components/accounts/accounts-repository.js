@@ -90,19 +90,17 @@ async function tambahKurangSaldo(id, amount){
 /**
  * Update existing account
  * @param {string} id - Account ID
- * @param {string} mothers_name - Name
- * @param {string} pin - Email
+ * @param {string} noTelp - Email
  * @returns {Promise}
  */
-async function updateAccount(id, mothers_name, pin) {
+async function updateAccount(id, noTelp) {
   return Account.updateOne(
     {
       _id: id,
     },
     {
       $set: {
-        mothers_name,
-        pin,
+        noTelp,
       },
     }
   );

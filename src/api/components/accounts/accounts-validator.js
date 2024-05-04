@@ -22,14 +22,8 @@ module.exports = {
   updateAccount: {
     //updateAccount kalau akun terblokir dan mau ganti pin (harus pergi ke bank)
     body: {
-      mothers_name: joi
-        .string()
-        .min(1)
-        .max(100)
-        .required()
-        .label('Nama ibu kandung'),
       pin: joi.string().min(6).max(6).required().label('Pin'),
-      pin_confirm: joi.string().required().label('Pin confirmation'),
+      noTelp: joi.string().min(10).max(13).required().label('noTelp'),
     },
   },
 

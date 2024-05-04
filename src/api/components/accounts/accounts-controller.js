@@ -55,8 +55,8 @@ async function transferMoney(request, response, next){
   const amount = request.body.amount;
 
   try{
-    const pinWrong = await accountsService.isPinWrong(id, pin);
-    if (!pinWrong) {
+    const pinRight = await accountsService.isPinWrong(id, pin);
+    if (!pinRight) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
         'Pin salah'
@@ -97,8 +97,8 @@ async function topUp(request, response, next){
     const pin = request.body.pin;
     const amount = request.body.amount;
 
-    const pinWrong = await accountsService.isPinWrong(id, pin);
-    if (!pinWrong) {
+    const pinRight = await accountsService.isPinWrong(id, pin);
+    if (!pinRight) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
         'Pin salah'
@@ -175,20 +175,17 @@ async function createAccount(request, response, next) {
 async function updateAccount(request, response, next) {
   try {
     const id = request.params.id;
-    const mothers_name = request.body.mothers_name;
     const pin = request.body.pin;
-    const pin_confirm = request.body.pin_confirm;
+    const noTelp = request.body.noTelp;
 
-    // // Email must be unique
-    // const emailIsRegistered = await accountsService.emailIsRegistered(email);
-    // if (emailIsRegistered) {
-    //   throw errorResponder(
-    //     errorTypes.EMAIL_ALREADY_TAKEN,
-    //     'Email is already registered'
-    //   );
-    // }
-
-    const success = await accountsService.updateAccount(id, mothers_name, pin, pin_confirm);
+    const pinRight = await accountsService.isPinWrong(id, pin);
+    if (!pinRight) {
+      throw errorResponder(
+        errorTypes.UNPROCESSABLE_ENTITY,
+        'Pin salah'
+      );
+    }
+    const success = await accountsService.updateAccount(id, noTelp);
 
     if (!success) {
       throw errorResponder(
@@ -197,7 +194,7 @@ async function updateAccount(request, response, next) {
       );
     }
 
-    return response.status(200).json({ id });
+    return response.status(200).json({ "Nomor telepon berhasil diupdate pada id:":id });
   } catch (error) {
     return next(error);
   }
@@ -283,20 +280,20 @@ async function changePassword(request, response, next) {
 async function filteringAccounts(request, response, next) {
   try {
     const search = request.query.search || null;
-    const sort = request.query.sort || 'email:asc'; //ini defaultnya jika tidak diisi berarti sorting secara asc pada email
+    const sort = request.query.sort || 'name:asc'; //ini defaultnya jika tidak diisi berarti sorting secara asc pada email
     const page_size = parseInt(request.query.page_size) || null; //page_size dan page_number otomatis merubah parameter jadi integer
     const page_number = parseInt(request.query.page_number) || null;
 
     let filteredAccounts = [];
-    const regexSearch = /^(email|name):[\w\s\S]+$/i; //kata awal harus antara email atau name, lalu ada : nya, terakhir boleh \w(huruf, angka, underscore), \s(spasi), \S(simbol), + artinya set karakter terakhir harus ada setidaknya 1
-    const regexSort = /^(email|name):(asc|desc)$/i; //kata awal harus antara email atau name, lalu ada : nya, terakhir antara asc atau desc
+    const regexSearch = /^(name):[\w\s]+$/i; //kata awal harus antara email atau name, lalu ada : nya, terakhir boleh \w(huruf, angka, underscore), \s(spasi), \S(simbol), + artinya set karakter terakhir harus ada setidaknya 1
+    const regexSort = /^(name):(asc|desc)$/i; //kata awal harus antara email atau name, lalu ada : nya, terakhir antara asc atau desc
 
     //SEARCH
     if (search != null){ //Jika search diisi
       let [field, key] = search.split(':'); //memisahkan parameter search dengan :. sebelum : jadi field, setelah : jadi key
       field = field.toLowerCase(); //mengubah field jadi huruf kecil untuk meminimalkan resiko error saat searchAccounts di accounts-service
       if(search.match(regexSearch)){ //jika formatnya sesuai
-        filteredAccounts = await accountsService.searchAccounts(field, key);
+        filteredAccounts = await accountsService.searchAccounts(key);
       } else { //jika formatnya tidak sesuai, search dianggap tidak ada
         filteredAccounts = await accountsService.getAccounts();
       }
@@ -318,7 +315,7 @@ async function filteringAccounts(request, response, next) {
     }
     
     //PAGE NUMBER & PAGE SIZE
-    const accountPerPage = 10;
+    const accountPerPage = 3;
     //dibawah ini default jika page_number dan page_size ada isinya. Kalau ada yang gak diisi, berarti bisa berubah. Oleh karena itu, disini pakai let, bukan const
     let indexAwal = (page_number - 1) * accountPerPage;
     //note indexAwal : misal total ada 4 halaman, accountPerPage nya 3

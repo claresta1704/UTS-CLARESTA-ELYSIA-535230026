@@ -57,39 +57,26 @@ async function searchIdbynoRek(destinationRek) {
 
 /**
  * search account
- * @param {string} field
  * @param {string} key
  * @returns {Array}
  */
-async function searchAccounts(field, key) {
+async function searchAccounts(key) {
   const pengguna = await getAccounts();
 
   const hasil = [];
   for (let i = 0; i < pengguna.length; i++) {
     //kita pakai getAccounts untuk mengambil semua data account dulu
     const searched = pengguna[i];
-    if (field == 'name') {
-      //baru disini, dicari data tertentu sesuai search
-      if (searched.name.includes(key)) {
-        hasil.push({
-          id: searched.id,
-          name: searched.name,
-          email: searched.email,
-          noTelp: searched.noTelp,
-        });
-      }
-    } else if (field == 'email') {
-      if (searched.email.includes(key)) {
-        hasil.push({
-          id: searched.id,
-          name: searched.name,
-          email: searched.email,
-          noTelp: searched.noTelp,
-        });
-      }
-    }
+    if (searched.name.includes(key)) {
+      hasil.push({
+        id: searched.id,
+        name: searched.name,
+        email: searched.email,
+        noTelp: searched.noTelp,
+    });
   }
   return hasil;
+}
 }
 
 /**
@@ -171,12 +158,10 @@ async function createAccount(name, mothers_name, email, noTelp, pin) {
 /**
  * Update existing account
  * @param {string} id - Account ID
- * @param {string} mothers_name - Name
- * @param {string} password - Email
- * @param {string} password_confirm
+ * @param {string} noTelp
  * @returns {boolean}
  */
-async function updateAccount(id, mothers_name, password, password_confirm) {
+async function updateAccount(id, noTelp) {
   const account = await accountsRepository.getAccount(id);
 
   // Account not found
@@ -187,9 +172,7 @@ async function updateAccount(id, mothers_name, password, password_confirm) {
   try {
     await accountsRepository.updateAccount(
       id,
-      mothers_name,
-      password,
-      password_confirm
+      noTelp
     );
   } catch (err) {
     return null;
