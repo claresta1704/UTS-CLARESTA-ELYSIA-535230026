@@ -63,21 +63,22 @@ async function searchIdbynoRek(destinationRek) {
  */
 async function searchAccounts(key) {
   const pengguna = await getAccounts();
-
+  
   const hasil = [];
-  for (let i = 0; i < pengguna.length; i++) {
-    //kita pakai getAccounts untuk mengambil semua data account dulu
+  for(let i=0; i < pengguna.length; i++){ //kita pakai getAccounts untuk mengambil semua data account dulu
     const searched = pengguna[i];
-    if (searched.name.includes(key)) {
+    if(searched.name.includes(key)){
       hasil.push({
         id: searched.id,
         name: searched.name,
         email: searched.email,
         noTelp: searched.noTelp,
-    });
+        noRek: searched.noRek,
+        saldo: searched.saldo,
+      });
+    }
   }
   return hasil;
-}
 }
 
 /**

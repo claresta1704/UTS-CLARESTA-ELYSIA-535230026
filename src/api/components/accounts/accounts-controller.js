@@ -13,7 +13,7 @@ const { boolean } = require('joi');
  */
 async function getAccounts(request, response, next) {
   try {
-    const accounts = await accountsService.getAccounts (request, response, next);
+    const accounts = await filteringAccounts (request, response, next);
     return response.status(200).json(accounts);
   } catch (error) {
     return next(error);
