@@ -41,8 +41,6 @@ async function getAccount(request, response, next) {
   }
 }
 
-let limitWrongPassword = 0;
-
 /**
  * Membuat fungsi untuk transfer uang
  * @param {object} request
@@ -57,12 +55,8 @@ async function transferMoney(request, response, next){
   const amount = request.body.amount;
 
   try{
-    if(limitWrongPassword==3){
-      return ('AKUN INI DIBLOKIR');
-    }
     const pinWrong = await accountsService.isPinWrong(id, pin);
-    if (pinWrong) {
-      limitWrongPassword = limitWrongPassword+1;
+    if (!pinWrong) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
         'Pin salah'
@@ -103,12 +97,8 @@ async function topUp(request, response, next){
     const pin = request.body.pin;
     const amount = request.body.amount;
 
-    if(limitWrongPassword==3){
-      return ('AKUN INI DIBLOKIR');
-    }
     const pinWrong = await accountsService.isPinWrong(id, pin);
     if (!pinWrong) {
-      limitWrongPassword = limitWrongPassword+1;
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
         'Pin salah'
@@ -199,9 +189,7 @@ async function updateAccount(request, response, next) {
     // }
 
     const success = await accountsService.updateAccount(id, mothers_name, pin, pin_confirm);
-    if(success){
-      limitWrongPassword = 0; //reset limit salah password
-    }
+
     if (!success) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
