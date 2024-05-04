@@ -45,9 +45,9 @@ let limitWrongPassword = 0;
 
 /**
  * Membuat fungsi untuk transfer uang
- * @param {string} request
- * @param {string} response
- * @param {string} next
+ * @param {object} request
+ * @param {object} response
+ * @param {object} next
  * @returns {object}
  */
 async function transferMoney(request, response, next){
@@ -68,16 +68,64 @@ async function transferMoney(request, response, next){
         'Pin salah'
       );
     }
+    const saldoSekarang = await accountsService.cekSaldo(id);
+    if(saldoSekarang < amount){
+      return ('TIDAK BISA TRANSFER, SALDO ANDA KURANG');
+    }
 
-    const transferSuccess = await accountsService.transferMoney(id, pin, destinationAccount, amount);
+    const transferSuccess = await accountsService.transferMoney(id, destinationAccount, amount);
+    if(transferSuccess){
+      const status = 'transfer';
+      accountsService.tambahKurangSaldo(id, status, amount);
+    }
+
     if(!transferSuccess){
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
         'Failed to transfer the money'
       );
     }
+    return response.status(200).json({ 'TRANSFER BERHASIL KE REKENING: ': destinationAccount});
   }catch (error){
+    return next(error);
+  }
+}
 
+/**
+ * @param {object} request
+ * @param {object} response
+ * @param {object} next
+ * @returns {object}
+ */
+async function topUp(request, response, next){
+  try{
+    const id = request.params.id;
+    const pin = request.body.pin;
+    const amount = request.body.amount;
+
+    if(limitWrongPassword==3){
+      return ('AKUN INI DIBLOKIR');
+    }
+    const pinWrong = await accountsService.isPinWrong(id, pin);
+    if (!pinWrong) {
+      limitWrongPassword = limitWrongPassword+1;
+      throw errorResponder(
+        errorTypes.UNPROCESSABLE_ENTITY,
+        'Pin salah'
+      );
+    }
+
+    const status = 'top up';
+    const success = accountsService.tambahKurangSaldo(id, status, amount);
+    if (!success) {
+      throw errorResponder(
+        errorTypes.UNPROCESSABLE_ENTITY,
+        'GAGAL TOPUP'
+      );
+    }
+    return response.status(200).json({ 'TOP UP BERHASIL KE: ': id });
+  } catch (error){
+    return next(error);
   }
 }
 
@@ -151,6 +199,9 @@ async function updateAccount(request, response, next) {
     // }
 
     const success = await accountsService.updateAccount(id, mothers_name, pin, pin_confirm);
+    if(success){
+      limitWrongPassword = 0; //reset limit salah password
+    }
     if (!success) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
@@ -333,6 +384,8 @@ async function filteringAccounts(request, response, next) {
 module.exports = {
   getAccounts,
   getAccount,
+  transferMoney,
+  topUp,
   createAccount,
   updateAccount,
   deleteAccount,

@@ -60,9 +60,21 @@ async function passwordMatched(password, hashedPassword) {
   return bcrypt.compareSync(password, hashedPassword);
 }
 
+/**
+ * Compares a plain text password and its hashed to determine its equality
+ * Mainly use for comparing login credentials
+ * @param {string} pin - A plain text password
+ * @param {string} hashedPin - A hashed password
+ * @returns {boolean}
+ */
+async function pinMatched(pin, hashedPin) {
+  return bcrypt.compareSync(pin, hashedPin);
+}
+
 module.exports = {
   hashPassword,
   randomRekening,
   hashPin,
   passwordMatched,
+  pinMatched,
 };

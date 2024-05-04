@@ -70,6 +70,24 @@ async function createAccount(name, mothers_name, email, noTelp, pin, noRek, sald
 }
 
 /**
+ * @param {string} id
+ * @param {number} amount
+ * @returns {Promise}
+ */
+async function tambahKurangSaldo(id, amount){
+  return Account.updateOne(
+    {
+      _id: id,
+    },
+    {
+      $set: {
+        saldo: amount,
+      },
+    }
+  );
+}
+
+/**
  * Update existing account
  * @param {string} id - Account ID
  * @param {string} mothers_name - Name
@@ -126,5 +144,6 @@ module.exports = {
   updateAccount,
   deleteAccount,
   getAccountBynoTelp,
+  tambahKurangSaldo,
   changePassword,
 };

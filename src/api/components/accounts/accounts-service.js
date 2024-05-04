@@ -1,6 +1,6 @@
 const accountsRepository = require('./accounts-repository');
 const { Account } = require('../../../models');
-const { hashPin, passwordMatched } = require('../../../utils/password');
+const { hashPin, pinMatched } = require('../../../utils/password');
 
 /**
  * Get list of accounts
@@ -36,6 +36,23 @@ async function countAccounts() {
     count = count + 1;
   }
   return count;
+}
+
+/**
+ * search account
+ * @param {string} destinationRek
+ * @returns {Object}
+ */
+async function searchIdbynoRek(destinationRek) {
+  const pengguna = await getAccounts();
+
+  for (let i = 0; i < pengguna.length; i++) {
+    //kita pakai getAccounts untuk mengambil semua data account dulu
+    const searched = pengguna[i];
+    if (searched.noRek.includes(destinationRek)) {
+        return (searched.id);
+    }
+  }
 }
 
 /**
@@ -206,13 +223,18 @@ async function deleteAccount(id) {
 /**
  * Fungsi untuk transfer uang
  * @param {string} id
- * @param {string} pin
  * @param {string} destinationAccount
  * @param {string} amount
  * @returns {boolean}
  */
-async function transferMoney(id, pin, destinationAccount, amount) {
-
+async function transferMoney(id, destinationAccount, amount) {
+  const destinationId = await searchIdbynoRek(destinationAccount);
+  const status = 'top up';
+  const berhasil = await tambahKurangSaldo(destinationId, status, amount);
+  if(!berhasil){
+    return null;
+  }
+  return true;
 }
 
 /**
@@ -231,40 +253,55 @@ async function noTelpIsRegistered(noTelp) {
 }
 
 /**
- * mengecek apakah pin salah
+ * cek saldo
  * @param {string} id
- * @param {string} pin
- * @returns {boolean}
+ * @returns {Object}
  */
-async function isPinWrong(id, pin) {
-  const pinRegistered = await accountsRepository.getAccount(id);
-
-  // Account not found
-  if (!pinRegistered) {
+async function cekSaldo(id){
+  const idRegistered = await accountsRepository.getAccount(id);
+  if(!idRegistered){
     return null;
   }
-
-  if (pinRegistered.pin != pin) {
-    return true;
-  }
-  return false;
+  return idRegistered.saldo;
 }
 
 /**
- * untuk sorting
- * @param {string} sort
- * @returns {array}
+ * mengelola tambah dan kurang saldo
+ * @param {string} id
+ * @param {string} status
+ * @param {number} amount
+ * @return {boolean}
  */
+async function tambahKurangSaldo(id, status, amount){
+  const account = await accountsRepository.getAccount(id)
+  if(!account){
+    return null;
+  }
+  let newnew;
+  if(status == 'transfer'){
+    newnew = account.saldo - amount;
+  }else if(status == 'top up'){
+    newnew = account.saldo + amount;
+  }else{
+    return null
+  }
+
+  const success = await accountsRepository.tambahKurangSaldo(id, newnew);
+  if(!success){
+    return null;
+  }
+  return true;
+}
 
 /**
  * Check whether the password is correct
- * @param {string} accountId - Account ID
+ * @param {string} id - Account ID
  * @param {string} pin - Password
  * @returns {boolean}
  */
-async function checkPassword(accountId, pin) {
-  const account = await accountsRepository.getAccount(accountId);
-  return passwordMatched(pin, account.pin);
+async function isPinWrong(id, pin) {
+  const account = await accountsRepository.getAccount(id);
+  return pinMatched(pin, account.pin);
 }
 
 /**
@@ -300,12 +337,14 @@ module.exports = {
   countAccounts,
   getAccount,
   searchAccounts,
+  cekSaldo,
   isPinWrong,
   sort,
   createAccount,
   updateAccount,
   deleteAccount,
   noTelpIsRegistered,
-  checkPassword,
+  tambahKurangSaldo,
+  searchIdbynoRek,
   changePassword,
 };

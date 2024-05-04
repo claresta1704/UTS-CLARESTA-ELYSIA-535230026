@@ -21,8 +21,11 @@ module.exports = (app) => {
     accountsControllers.createAccount
   );
 
-  // // Mentransfer uang
-  // route.post('transfer', authenticationMiddleware, accountsControllers.transferMoney);
+  // Mentransfer uang
+  route.post('/:id/transfer', authenticationMiddleware, accountsControllers.transferMoney);
+
+  // Top Up
+  route.post('/:id/topup', authenticationMiddleware, accountsControllers.topUp);
 
   // Get account detail
   route.get('/:id', authenticationMiddleware, accountsControllers.getAccount);

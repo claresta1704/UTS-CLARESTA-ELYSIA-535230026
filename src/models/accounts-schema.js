@@ -5,7 +5,7 @@ const accountsSchema = {
   noTelp: String,
   pin: String,
   noRek: String,
-  saldo: String,
+  saldo: Number,
 };
 
 module.exports = accountsSchema;
