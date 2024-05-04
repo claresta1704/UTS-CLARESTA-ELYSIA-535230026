@@ -57,7 +57,7 @@ async function getAccount(id) {
  * @param {string} noRek - nomor rekening random 10 angka
  * @returns {Promise}
  */
-async function createAccount(name, mothers_name, email, noTelp, pin, noRek) {
+async function createAccount(name, mothers_name, email, noTelp, pin, noRek, saldo) {
   return Account.create({
     name,
     mothers_name,
@@ -65,6 +65,7 @@ async function createAccount(name, mothers_name, email, noTelp, pin, noRek) {
     noTelp,
     pin,
     noRek,
+    saldo,
   });
 }
 

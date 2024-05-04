@@ -21,6 +21,9 @@ module.exports = (app) => {
     accountsControllers.createAccount
   );
 
+  // // Mentransfer uang
+  // route.post('transfer', authenticationMiddleware, accountsControllers.transferMoney);
+
   // Get account detail
   route.get('/:id', authenticationMiddleware, accountsControllers.getAccount);
 

@@ -24,6 +24,7 @@ logger.info('Creating default Accounts');
 
     const hashedPin = await hashPin(pin);
     const noRek = randomRekening();
+    const saldo = 0;
     await Account.create({
       name,
       mothers_name,
@@ -31,6 +32,7 @@ logger.info('Creating default Accounts');
       noTelp,
       pin: hashedPin,
       noRek,
+      saldo,
     });
   } catch (e) {
     logger.error(e);

@@ -41,6 +41,46 @@ async function getAccount(request, response, next) {
   }
 }
 
+let limitWrongPassword = 0;
+
+/**
+ * Membuat fungsi untuk transfer uang
+ * @param {string} request
+ * @param {string} response
+ * @param {string} next
+ * @returns {object}
+ */
+async function transferMoney(request, response, next){
+  const id = request.params.id;
+  const pin = request.body.pin;
+  const destinationAccount = request.body.destinationAccount;
+  const amount = request.body.amount;
+
+  try{
+    if(limitWrongPassword==3){
+      return ('AKUN INI DIBLOKIR');
+    }
+    const pinWrong = await accountsService.isPinWrong(id, pin);
+    if (pinWrong) {
+      limitWrongPassword = limitWrongPassword+1;
+      throw errorResponder(
+        errorTypes.UNPROCESSABLE_ENTITY,
+        'Pin salah'
+      );
+    }
+
+    const transferSuccess = await accountsService.transferMoney(id, pin, destinationAccount, amount);
+    if(!transferSuccess){
+      throw errorResponder(
+        errorTypes.UNPROCESSABLE_ENTITY,
+        'Failed to transfer the money'
+      );
+    }
+  }catch (error){
+
+  }
+}
+
 /**
  * Handle create account request
  * @param {object} request - Express request object
@@ -56,7 +96,6 @@ async function createAccount(request, response, next) {
     const noTelp = request.body.noTelp;
     const pin = request.body.pin;
     const pin_confirm = request.body.pin_confirm;
-
     // Check confirmation password
     if (pin !== pin_confirm) {
       throw errorResponder(

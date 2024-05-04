@@ -18,6 +18,7 @@ async function getAccounts() {
       email: account.email,
       noTelp: account.noTelp,
       noRek: account.noRek,
+      saldo: account.saldo,
     });
   }
 
@@ -28,13 +29,13 @@ async function getAccounts() {
  * //Menghitung jumlah account keseluruhan
  * @returns {number}
  */
-async function countAccounts(){
+async function countAccounts() {
   const counted = await accountsRepository.getAccounts(); //kita pakai getAccount dulu, nanti dari getAccount dimasukkan lagi ke array baru
   let count = 0;
-  for(let j = 0; j < counted.length; j++){
+  for (let j = 0; j < counted.length; j++) {
     count = count + 1;
-  };
-  return (count);
+  }
+  return count;
 }
 
 /**
@@ -45,12 +46,14 @@ async function countAccounts(){
  */
 async function searchAccounts(field, key) {
   const pengguna = await getAccounts();
-  
+
   const hasil = [];
-  for(let i=0; i < pengguna.length; i++){ //kita pakai getAccounts untuk mengambil semua data account dulu
+  for (let i = 0; i < pengguna.length; i++) {
+    //kita pakai getAccounts untuk mengambil semua data account dulu
     const searched = pengguna[i];
-    if(field == 'name'){ //baru disini, dicari data tertentu sesuai search
-      if(searched.name.includes(key)){
+    if (field == 'name') {
+      //baru disini, dicari data tertentu sesuai search
+      if (searched.name.includes(key)) {
         hasil.push({
           id: searched.id,
           name: searched.name,
@@ -58,14 +61,14 @@ async function searchAccounts(field, key) {
           noTelp: searched.noTelp,
         });
       }
-    } else if (field == 'email'){
-      if(searched.email.includes(key)){
+    } else if (field == 'email') {
+      if (searched.email.includes(key)) {
         hasil.push({
           id: searched.id,
           name: searched.name,
           email: searched.email,
           noTelp: searched.noTelp,
-        })
+        });
       }
     }
   }
@@ -79,7 +82,7 @@ async function searchAccounts(field, key) {
  * @param {string} sort_order
  * @returns {Array}
  */
-async function sort (array, field, sort_order){
+async function sort(array, field, sort_order) {
   const sorted = accountsRepository.sort(array, field, sort_order); //memanggil fungsi sort di accountsRepository
   return sorted;
 }
@@ -103,6 +106,7 @@ async function getAccount(id) {
     email: account.email,
     noTelp: account.noTelp,
     noRek: account.noRek,
+    saldo: account.saldo,
   };
 }
 
@@ -110,7 +114,7 @@ async function getAccount(id) {
  * fungsi untuk membuat nomor rekening acak 10 angka
  * @returns {string}
  */
-function randomRekening(){
+function randomRekening() {
   const noRek = Math.floor(1000000000 + Math.random() * 90000000000);
   return noRek.toString();
 }
@@ -126,11 +130,20 @@ function randomRekening(){
  */
 async function createAccount(name, mothers_name, email, noTelp, pin) {
   // Hash pin
-  const hashedPin= await hashPin(pin);
+  const hashedPin = await hashPin(pin);
   const noRek = randomRekening();
+  const saldo = 0;
 
   try {
-    await accountsRepository.createAccount(name, mothers_name, email, noTelp, hashedPin, noRek);
+    await accountsRepository.createAccount(
+      name,
+      mothers_name,
+      email,
+      noTelp,
+      hashedPin,
+      noRek,
+      saldo
+    );
   } catch (err) {
     return null;
   }
@@ -155,7 +168,12 @@ async function updateAccount(id, mothers_name, password, password_confirm) {
   }
 
   try {
-    await accountsRepository.updateAccount(id, mothers_name, password, password_confirm);
+    await accountsRepository.updateAccount(
+      id,
+      mothers_name,
+      password,
+      password_confirm
+    );
   } catch (err) {
     return null;
   }
@@ -186,6 +204,18 @@ async function deleteAccount(id) {
 }
 
 /**
+ * Fungsi untuk transfer uang
+ * @param {string} id
+ * @param {string} pin
+ * @param {string} destinationAccount
+ * @param {string} amount
+ * @returns {boolean}
+ */
+async function transferMoney(id, pin, destinationAccount, amount) {
+
+}
+
+/**
  * Check whether the email is registered
  * @param {string} noTelp - Email
  * @returns {boolean}
@@ -197,6 +227,26 @@ async function noTelpIsRegistered(noTelp) {
     return true;
   }
 
+  return false;
+}
+
+/**
+ * mengecek apakah pin salah
+ * @param {string} id
+ * @param {string} pin
+ * @returns {boolean}
+ */
+async function isPinWrong(id, pin) {
+  const pinRegistered = await accountsRepository.getAccount(id);
+
+  // Account not found
+  if (!pinRegistered) {
+    return null;
+  }
+
+  if (pinRegistered.pin != pin) {
+    return true;
+  }
   return false;
 }
 
@@ -250,6 +300,7 @@ module.exports = {
   countAccounts,
   getAccount,
   searchAccounts,
+  isPinWrong,
   sort,
   createAccount,
   updateAccount,
