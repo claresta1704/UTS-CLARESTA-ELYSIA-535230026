@@ -232,7 +232,7 @@ async function filteringUsers(request, response, next) {
       fieldSort = fieldSort.toLowerCase(); //dibuat huruf kecil untuk mengurangi resiko terjadi error
       sortOrder = sortOrder.toLowerCase();
       filteredUsers = await usersService.sort(filteredUsers, fieldSort, sortOrder);
-    }else if(sort.match(regexSort)){
+    }else if(!sort.match(regexSort)){
       filteredUsers = await usersService.sort(filteredUsers, fieldSortDefault, sortOrderDefault);
     }
     

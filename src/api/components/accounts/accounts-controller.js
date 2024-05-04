@@ -324,7 +324,7 @@ async function filteringAccounts(request, response, next) {
       fieldSort = fieldSort.toLowerCase(); //dibuat huruf kecil untuk mengurangi resiko terjadi error
       sortOrder = sortOrder.toLowerCase();
       filteredAccounts = await accountsService.sort(filteredAccounts, fieldSort, sortOrder);
-    }else if(sort.match(regexSort)){
+    }else if(!sort.match(regexSort)){
       filteredAccounts = await accountsService.sort(filteredAccounts, fieldSortDefault, sortOrderDefault);
     }
     
