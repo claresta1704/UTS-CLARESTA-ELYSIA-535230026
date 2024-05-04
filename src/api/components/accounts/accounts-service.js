@@ -161,7 +161,7 @@ async function createAccount(name, mothers_name, email, noTelp, pin) {
  * @param {string} noTelp
  * @returns {boolean}
  */
-async function updateAccount(id, noTelp) {
+async function updateNoTelp(id, noTelp) {
   const account = await accountsRepository.getAccount(id);
 
   // Account not found
@@ -170,7 +170,7 @@ async function updateAccount(id, noTelp) {
   }
 
   try {
-    await accountsRepository.updateAccount(
+    await accountsRepository.updateNoTelp(
       id,
       noTelp
     );
@@ -325,7 +325,7 @@ module.exports = {
   isPinWrong,
   sort,
   createAccount,
-  updateAccount,
+  updateNoTelp,
   deleteAccount,
   noTelpIsRegistered,
   tambahKurangSaldo,

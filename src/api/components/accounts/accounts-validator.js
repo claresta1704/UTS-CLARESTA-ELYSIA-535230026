@@ -19,8 +19,8 @@ module.exports = {
     },
   },
 
-  updateAccount: {
-    //updateAccount kalau akun terblokir dan mau ganti pin (harus pergi ke bank)
+  updateNoTelp: {
+    //untuk update nomor telepon
     body: {
       pin: joi.string().min(6).max(6).required().label('Pin'),
       noTelp: joi.string().min(10).max(13).required().label('noTelp'),

@@ -172,7 +172,7 @@ async function createAccount(request, response, next) {
  * @param {object} next - Express route middlewares
  * @returns {object} Response object or pass an error to the next route
  */
-async function updateAccount(request, response, next) {
+async function updateNoTelp(request, response, next) {
   try {
     const id = request.params.id;
     const pin = request.body.pin;
@@ -185,7 +185,7 @@ async function updateAccount(request, response, next) {
         'Pin salah'
       );
     }
-    const success = await accountsService.updateAccount(id, noTelp);
+    const success = await accountsService.updateNoTelp(id, noTelp);
 
     if (!success) {
       throw errorResponder(
@@ -372,7 +372,7 @@ module.exports = {
   transferMoney,
   topUp,
   createAccount,
-  updateAccount,
+  updateNoTelp,
   deleteAccount,
   changePassword,
   filteringAccounts,

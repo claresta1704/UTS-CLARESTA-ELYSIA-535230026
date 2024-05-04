@@ -93,7 +93,7 @@ async function tambahKurangSaldo(id, amount){
  * @param {string} noTelp - Email
  * @returns {Promise}
  */
-async function updateAccount(id, noTelp) {
+async function updateNoTelp(id, noTelp) {
   return Account.updateOne(
     {
       _id: id,
@@ -139,7 +139,7 @@ module.exports = {
   sort,
   getAccount,
   createAccount,
-  updateAccount,
+  updateNoTelp,
   deleteAccount,
   getAccountBynoTelp,
   tambahKurangSaldo,

@@ -34,8 +34,8 @@ module.exports = (app) => {
   route.put(
     '/:id',
     authenticationMiddleware,
-    celebrate(accountsValidator.updateAccount),
-    accountsControllers.updateAccount
+    celebrate(accountsValidator.updateNoTelp),
+    accountsControllers.updateNoTelp
   );
 
   // Delete account
