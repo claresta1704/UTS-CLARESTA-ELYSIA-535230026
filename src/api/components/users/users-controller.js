@@ -228,7 +228,7 @@ async function filteringUsers(request, response, next) {
 
     //SORT - karena sudah dibuat default jika tidak diisi, jadi tidak pakai if(sort != null)
     if(sort.match(regexSort)){
-      let [fieldSort, sortOrder] = sort.split(':');
+      let [fieldSort, sortOrder] = sort.split(':'); //sama seperti search, fieldSort dan sortOrder dipisahkan dengan :
       fieldSort = fieldSort.toLowerCase(); //dibuat huruf kecil untuk mengurangi resiko terjadi error
       sortOrder = sortOrder.toLowerCase();
       filteredUsers = await usersService.sort(filteredUsers, fieldSort, sortOrder);
@@ -269,14 +269,14 @@ async function filteringUsers(request, response, next) {
     }
     let has_previous_page = (indexAwal-1 !== -1); //bernilai true jika index awal dikurangi 1, hasilnya bukan -1(-1 berarti sudah lewat indec)
     let has_next_page = (indexAkhir+1 <= totalUser); //bernilai true jika index akhir ditambah 1, hasilnya tidak lebih dari total user
-    let count = filteredUsers.length;
+    let count = filteredUsers.length; //count berarti berapa hasil user yang sudah difilter
 
     //Untuk OUTPUT
     const result = {};
-    if(page_number !== null){
+    if(page_number !== null){ //kalau page_number diisi, berarti ada page_numbernya. Jika tidak diisi, tidak ditampilkan karena akan menampilkan semuanya
       result.page_number = page_number;
     }
-    result.page_size = userPerPage;
+    result.page_size = userPerPage; //karena page_size disini berbeda dengan page_size yang menjadi filter, jadi disamakan dengan maksimal user dalam 1 halaman
     result.count = count;
     result.total_pages = total_page;
     result.has_previous_page = has_previous_page;

@@ -29,7 +29,7 @@ async function getUsers() {
 async function countUsers(){
   const counted = await usersRepository.getUsers(); //kita pakai getUser dulu, nanti dari getUser dimasukkan lagi ke array baru
   let count = 0;
-  for(let j = 0; j < counted.length; j++){
+  for(let j = 0; j < counted.length; j++){ //hitung jumlah berdasarkan length nya
     count = count + 1;
   };
   return (count);
@@ -47,8 +47,8 @@ async function searchUsers(field, key) {
   const hasil = [];
   for(let i=0; i < pengguna.length; i++){ //kita pakai getUsers untuk mengambil semua data user dulu
     const searched = pengguna[i];
-    if(field == 'name'){ //baru disini, dicari data tertentu sesuai search
-      if(searched.name.includes(key)){
+    if(field == 'name'){ //baru disini, kita sesuaikan fieldnya
+      if(searched.name.includes(key)){ //jika di field name yang mengandung key, maka akan dimasukkan dalam array hasil
         hasil.push({
           id: searched.id,
           name: searched.name,
@@ -56,7 +56,7 @@ async function searchUsers(field, key) {
         });
       }
     } else if (field == 'email'){
-      if(searched.email.includes(key)){
+      if(searched.email.includes(key)){ //jika di field email yang mengandung key, maka akan dimasukkan dalam array hasil
         hasil.push({
           id: searched.id,
           name: searched.name,
@@ -181,12 +181,6 @@ async function emailIsRegistered(email) {
 
   return false;
 }
-
-/**
- * untuk sorting
- * @param {string} sort
- * @returns {array}
- */
 
 /**
  * Check whether the password is correct

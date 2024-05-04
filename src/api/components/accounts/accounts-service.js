@@ -121,9 +121,9 @@ async function getAccount(id) {
  * @returns {string}
  */
 function randomRekening() {
-  const noRek = Math.floor(1000000000 + Math.random() * 90000000000);
-  return noRek.toString();
-}
+  const noRek = Math.floor(1000000000 + Math.random() * 90000000000); //math.floor itu membulatkan jadi integer
+  return noRek.toString(); //Math.random() * 90000000000 berarti membuat angka random dari 0 sampai 9000000000
+} //1000000000 diawal berarti menambahkan 1000000000 ke hasil perhitungan math.random tadi. Jadi minimal pasti angkanya adalah 1000000000
 
 /**
  * Create new account
@@ -213,7 +213,7 @@ async function deleteAccount(id) {
  * @returns {boolean}
  */
 async function transferMoney(id, destinationAccount, amount) { //lebih fokus ke rekening yang akan ditransfer, saldonya akan bertambah
-  const destinationId = await searchIdbynoRek(destinationAccount);
+  const destinationId = await searchIdbynoRek(destinationAccount); //karena itu, disini noreknya adalah yang mau ditransfer
   const status = 'top up';
   const berhasil = await tambahKurangSaldo(destinationId, status, amount);
   if(!berhasil){
@@ -264,9 +264,9 @@ async function tambahKurangSaldo(id, status, amount){
   }
   let newnew;
   if(status == 'transfer'){
-    newnew = account.saldo - amount;
+    newnew = account.saldo - amount; //kalau transfer, berarti saldo pengguna saat ini dikurangi jumlah transfer
   }else if(status == 'top up'){
-    newnew = account.saldo + amount;
+    newnew = account.saldo + amount; //sebaliknya kalau top up, bertambah
   }else{
     return null
   }
@@ -279,9 +279,9 @@ async function tambahKurangSaldo(id, status, amount){
 }
 
 /**
- * Check whether the password is correct
+ * cek pin
  * @param {string} id - Account ID
- * @param {string} pin - Password
+ * @param {string} pin - pin
  * @returns {boolean}
  */
 async function isPinWrong(id, pin) {
@@ -290,12 +290,12 @@ async function isPinWrong(id, pin) {
 }
 
 /**
- * Check whether the password is correct
+ * cek nama ibu
  * @param {string} id - Account ID
- * @param {string} mothers_name - Password
+ * @param {string} mothers_name - nama ibu
  * @returns {boolean}
  */
-async function isMothersNameWrong(id, mothers_name) {
+async function isMothersNameWrong(id, mothers_name) { //cek apakah nama ibunya salah
   const account = await accountsRepository.getAccount(id);
   if(account.mothers_name != mothers_name){
     return false;
@@ -306,7 +306,7 @@ async function isMothersNameWrong(id, mothers_name) {
 /**
  * Change account password
  * @param {string} accountId - Account ID
- * @param {string} pin - Password
+ * @param {string} pin - pin
  * @returns {boolean}
  */
 async function changePin(accountId, pin) {

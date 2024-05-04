@@ -17,18 +17,18 @@ async function getUsers() {
  */
 async function sort(array, field_name, sort){
   let sortOrder;
-  if(sort == 'asc'){
+  if(sort == 'asc'){ //kalau di javaScript, fungsi sort sudah ada
     sortOrder = 1;
   }else if(sort == 'desc'){
     sortOrder = -1;
   }else{
-    sortOrder = 1;
+    sortOrder = 1; //default asc
   }
 
   let sorted = await array.sort((colSatu, colDua) => {
-    if(colSatu[field_name] < colDua[field_name]){
-      return (-1*sortOrder);
-    }else if(colSatu[field_name] > colDua[field_name]){
+    if(colSatu[field_name] < colDua[field_name]){ //misalnya jika di field name, ada a dan c. maka a<c, dan dikembalikan -1 x sortOrder
+      return (-1*sortOrder); //misalnya sort ordernya desc (-1) berarti c dulu baru a. Maka -1 x -1 = 1. Kalau i berarti a ditempatkan setelah c
+    }else if(colSatu[field_name] > colDua[field_name]){ //misalnya sort ordernya asc (1) berarti berarti a dulu baru c. Maka -1 x 1 = -1. Kalau -1 berarti a ditempatkan sebelum c
       return (1*sortOrder);
     }else{
       return 0;

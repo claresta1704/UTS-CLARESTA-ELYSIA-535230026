@@ -55,16 +55,19 @@ async function transferMoney(request, response, next){
   const amount = request.body.amount;
 
   try{
-    const pinRight = await accountsService.isPinWrong(id, pin);
+    const pinRight = await accountsService.isPinWrong(id, pin); //cek dulu apakah pinnya salah
     if (!pinRight) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
         'Pin salah'
       );
     }
-    const saldoSekarang = await accountsService.cekSaldo(id);
+    const saldoSekarang = await accountsService.cekSaldo(id); //cek apakah saldonya cukup
     if(saldoSekarang < amount){
-      return ('TIDAK BISA TRANSFER, SALDO ANDA KURANG');
+      throw errorResponder(
+        errorTypes.UNPROCESSABLE_ENTITY,
+        'TIDAK BISA TRANSFER, SALDO ANDA KURANG'
+      );
     }
 
     const transferSuccess = await accountsService.transferMoney(id, destinationAccount, amount);
@@ -97,7 +100,7 @@ async function topUp(request, response, next){
     const pin = request.body.pin;
     const amount = request.body.amount;
 
-    const pinRight = await accountsService.isPinWrong(id, pin);
+    const pinRight = await accountsService.isPinWrong(id, pin); //cek dulu apakah pinnya salah
     if (!pinRight) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
@@ -134,7 +137,7 @@ async function createAccount(request, response, next) {
     const noTelp = request.body.noTelp;
     const pin = request.body.pin;
     const pin_confirm = request.body.pin_confirm;
-    // Check confirmation password
+    // Check confirmation pin
     if (pin !== pin_confirm) {
       throw errorResponder(
         errorTypes.INVALID_PASSWORD,
@@ -142,7 +145,7 @@ async function createAccount(request, response, next) {
       );
     }
 
-    // Email must be unique
+    // nomor telepon tidak bisa sama
     const noTelpIsRegistered = await accountsService.noTelpIsRegistered(noTelp);
     if (noTelpIsRegistered) {
       throw errorResponder(
@@ -178,7 +181,7 @@ async function updateNoTelp(request, response, next) {
     const pin = request.body.pin;
     const noTelp = request.body.noTelp;
 
-    const pinRight = await accountsService.isPinWrong(id, pin);
+    const pinRight = await accountsService.isPinWrong(id, pin); //cek dulu pinnya bener gak
     if (!pinRight) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
@@ -240,8 +243,8 @@ async function changePin(request, response, next) {
     const pin_new = request.body.pin_new;
     const pin_confirm = request.body.pin_confirm;
 
-    const motherNameRight = await accountsService.isMothersNameWrong(id, mothers_name);
-    if(!motherNameRight){
+    const motherNameRight = await accountsService.isMothersNameWrong(id, mothers_name); //syarat ganti pin adalah nama ibu dan konfirmasi pin lama
+    if(!motherNameRight){ //cek dulu nama ibu
       throw errorResponder(
         errorTypes.INVALID_CREDENTIALS,
         'Nama ibu salah'
@@ -249,7 +252,7 @@ async function changePin(request, response, next) {
     }
 
 
-    const pinRight = await accountsService.isPinWrong(id, pin_old);
+    const pinRight = await accountsService.isPinWrong(id, pin_old); //cek apakah pin lamanya benar
     if (!pinRight) {
       throw errorResponder(
         errorTypes.INVALID_CREDENTIALS,
@@ -257,7 +260,7 @@ async function changePin(request, response, next) {
       );
     }
 
-    // Check password confirmation
+    // Check pin confirmation
     if (pin_new !== pin_confirm) {
       throw errorResponder(
         errorTypes.INVALID_PASSWORD,
@@ -280,7 +283,7 @@ async function changePin(request, response, next) {
   }
 }
 
-/**
+/** disini hampir sama persis dengan di users
  * Handle change account password request
  * @param {object} request - Express request object
  * @param {object} response - Express response object
@@ -290,13 +293,13 @@ async function changePin(request, response, next) {
 async function filteringAccounts(request, response, next) {
   try {
     const search = request.query.search || null;
-    const sort = request.query.sort || 'name:asc'; //ini defaultnya jika tidak diisi berarti sorting secara asc pada email
+    const sort = request.query.sort || 'name:asc'; //ini defaultnya jika tidak diisi berarti sorting secara asc pada nama
     const page_size = parseInt(request.query.page_size) || null; //page_size dan page_number otomatis merubah parameter jadi integer
     const page_number = parseInt(request.query.page_number) || null;
 
     let filteredAccounts = [];
-    const regexSearch = /^(name):[\w\s]+$/i; //kata awal harus antara email atau name, lalu ada : nya, terakhir boleh \w(huruf, angka, underscore), \s(spasi), \S(simbol), + artinya set karakter terakhir harus ada setidaknya 1
-    const regexSort = /^(name):(asc|desc)$/i; //kata awal harus antara email atau name, lalu ada : nya, terakhir antara asc atau desc
+    const regexSearch = /^(name):[\w\s]+$/i; //kata awal harus name, lalu ada : nya, terakhir boleh \w(huruf, angka, underscore), \s(spasi), + artinya set karakter terakhir harus ada setidaknya 1
+    const regexSort = /^(name):(asc|desc)$/i; //kata awal harus name, lalu ada : nya, terakhir antara asc atau desc
 
     //SEARCH
     if (search != null){ //Jika search diisi
