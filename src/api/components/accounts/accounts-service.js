@@ -227,7 +227,7 @@ async function deleteAccount(id) {
  * @param {string} amount
  * @returns {boolean}
  */
-async function transferMoney(id, destinationAccount, amount) {
+async function transferMoney(id, destinationAccount, amount) { //lebih fokus ke rekening yang akan ditransfer, saldonya akan bertambah
   const destinationId = await searchIdbynoRek(destinationAccount);
   const status = 'top up';
   const berhasil = await tambahKurangSaldo(destinationId, status, amount);
@@ -337,6 +337,7 @@ module.exports = {
   countAccounts,
   getAccount,
   searchAccounts,
+  transferMoney,
   cekSaldo,
   isPinWrong,
   sort,
